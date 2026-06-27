@@ -777,70 +777,6 @@ function getPieceColor(pid) {
     return colors[(pid - 1) % colors.length];
 }
 
-// ============================================================
-// RENDERING: Continuous piece shape (NO per-cell strokes)
-// ============================================================
-
-// Create a compound rounded path from a 2D grid (0=empty, 1=filled).
-// Only rounds convex corners (exactly 1 of 4 cells filled at a grid
-// intersection → the shape outline bulges outward). Concave corners
-// (3 filled) and interior junctions stay sharp so adjacent cells
-// remain seamless.
-function createRoundedGridPath(grid, ox, oy, cs) {
-    const rad = Math.max(2, Math.min(Math.round(cs * 0.1), 8));
-    const rows = grid.length;
-    const cols = grid[0]?.length || 0;
-    const path = new Path2D();
-
-    const filled = (rr, cc) => rr >= 0 && rr < rows && cc >= 0 && cc < cols && grid[rr][cc] === 1;
-
-    for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-            if (grid[r][c] !== 1) continue;
-
-            const x = ox + c * cs;
-            const y = oy + r * cs;
-
-            // Convex = exactly 1 of the 4 surrounding cells is filled
-            function convex(gr, gc) {
-                let n = 0;
-                if (filled(gr - 1, gc - 1)) n++;
-                if (filled(gr - 1, gc)) n++;
-                if (filled(gr, gc - 1)) n++;
-                if (filled(gr, gc)) n++;
-                return n === 1;
-            }
-
-            const tl = convex(r, c);
-            const tr = convex(r, c + 1);
-            const br = convex(r + 1, c + 1);
-            const bl = convex(r + 1, c);
-
-            const cp = new Path2D();
-            cp.moveTo(x + (tl ? rad : 0), y);
-            cp.lineTo(x + cs - (tr ? rad : 0), y);
-            if (tr) cp.arcTo(x + cs, y, x + cs, y + rad, rad);
-            cp.lineTo(x + cs, y + cs - (br ? rad : 0));
-            if (br) cp.arcTo(x + cs, y + cs, x + cs - rad, y + cs, rad);
-            cp.lineTo(x + (bl ? rad : 0), y + cs);
-            if (bl) cp.arcTo(x, y + cs, x, y + cs - rad, rad);
-            cp.lineTo(x, y + (tl ? rad : 0));
-            if (tl) cp.arcTo(x, y, x + rad, y, rad);
-            cp.closePath();
-
-            path.addPath(cp);
-        }
-    }
-
-    return path;
-}
-
-// Create a compound path from piece shape. Delegates to createRoundedGridPath
-// so pieces get rounded convex corners with seamless internal boundaries.
-function createPiecePath(shape, ox, oy, cs) {
-    return createRoundedGridPath(shape, ox, oy, cs);
-}
-
 // Build a path tracing only the outer perimeter of a polyomino shape.
 // Used for inner stroke so internal cell boundaries are not drawn.
 function createOuterBoundaryPath(grid, ox, oy, cs) {
@@ -986,64 +922,6 @@ function createOuterBoundaryPath(grid, ox, oy, cs) {
     return path;
 }
 
-// Find concave corners: grid intersections where exactly 3 of 4 cells are filled.
-// Returns [{cx, cy, emptyQ}] in canvas coords; emptyQ is 'nw'|'ne'|'sw'|'se'.
-function findConcaveCorners(grid, ox, oy, cs) {
-    const rows = grid.length;
-    const cols = grid[0]?.length || 0;
-    const f = (r, c) => r >= 0 && r < rows && c >= 0 && c < cols && grid[r][c] === 1;
-    const corners = [];
-    for (let gr = 0; gr <= rows; gr++) {
-        for (let gc = 0; gc <= cols; gc++) {
-            const nw = f(gr - 1, gc - 1), ne = f(gr - 1, gc);
-            const sw = f(gr, gc - 1),     se = f(gr, gc);
-            const n = (nw ? 1 : 0) + (ne ? 1 : 0) + (sw ? 1 : 0) + (se ? 1 : 0);
-            if (n === 3) {
-                const q = !nw ? 'nw' : !ne ? 'ne' : !sw ? 'sw' : 'se';
-                corners.push({ cx: ox + gc * cs, cy: oy + gr * cs, emptyQ: q });
-            }
-        }
-    }
-    return corners;
-}
-
-// Draw a rounded fill at a concave corner. Builds a path:
-//   corner → along one edge to tangent → arc → along other edge back to corner
-function drawConcaveFill(ctx, cx, cy, rad, q, color, grad) {
-    let x1, y1, ox, oy, a1, a2, cw;
-    switch (q) {
-        case 'ne':
-            ox = cx + rad; oy = cy - rad;
-            x1 = cx;       y1 = cy - rad;
-            a1 = Math.PI;  a2 = Math.PI / 2; cw = true;  // a1 > a2 → ccw for 90°
-            break;
-        case 'nw':
-            ox = cx - rad; oy = cy - rad;
-            x1 = cx;       y1 = cy - rad;
-            a1 = 0;        a2 = Math.PI / 2; cw = false;
-            break;
-        case 'sw':
-            ox = cx - rad; oy = cy + rad;
-            x1 = cx - rad; y1 = cy;
-            a1 = -Math.PI / 2; a2 = 0; cw = false;
-            break;
-        case 'se':
-            ox = cx + rad; oy = cy + rad;
-            x1 = cx + rad; y1 = cy;
-            a1 = -Math.PI / 2; a2 = Math.PI; cw = true;
-            break;
-    }
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(x1, y1);
-    ctx.arc(ox, oy, rad, a1, a2, cw);
-    ctx.closePath();
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.fillStyle = grad;
-    ctx.fill();
-}
-
 // Draw a piece at pixel position (no grid snap) — used for drag clone
 function drawPieceAt(shape, ox, oy, cs, color) {
     const outlinePath = createOuterBoundaryPath(shape, ox, oy, cs);
@@ -1115,7 +993,7 @@ function renderTray() {
     ctx.roundRect(0.5, 0.5, w - 1, h - 1, outerR);
     ctx.stroke();
 
-    // ---- Recessed area with rounded convex corners ----
+    // ---- Recessed area with rounded corners (outer perimeter path) ----
     const trayGrid = [];
     for (let r = 0; r < TRAY_ROWS; r++) {
         trayGrid[r] = [];
@@ -1123,16 +1001,26 @@ function renderTray() {
             trayGrid[r][c] = isBlocked(r, c) ? 0 : 1;
         }
     }
-    const recessPath = createRoundedGridPath(trayGrid, TRAY_PADDING, TRAY_PADDING, cs);
-    ctx.fillStyle = trayRecess;
-    ctx.fill(recessPath);
+    const recessPath = createOuterBoundaryPath(trayGrid, TRAY_PADDING, TRAY_PADDING, cs);
 
-    // Round concave corners of the tray recess
-    const recessRad = Math.max(2, Math.min(Math.round(cs * 0.1), 8));
-    const recessConcave = findConcaveCorners(trayGrid, TRAY_PADDING, TRAY_PADDING, cs);
-    for (const c of recessConcave) {
-        drawConcaveFill(ctx, c.cx, c.cy, recessRad, c.emptyQ, trayRecess, trayRecess);
-    }
+    ctx.save();
+    ctx.clip(recessPath);
+
+    // Fill recess
+    ctx.fillStyle = trayRecess;
+    ctx.fillRect(0, 0, w, h);
+
+    // Inner stroke along recess perimeter (bevel gradient, same approach as pieces)
+    const recessSW = Math.max(0.8, Math.min(Math.round(cs * 0.04), 2.5));
+    ctx.lineWidth = recessSW * 2;
+    const recessSG = ctx.createLinearGradient(TRAY_PADDING, TRAY_PADDING, w - TRAY_PADDING, h - TRAY_PADDING);
+    recessSG.addColorStop(0, 'rgba(220,220,220,0.15)');
+    recessSG.addColorStop(0.5, 'rgba(0,0,0,0.03)');
+    recessSG.addColorStop(1, 'rgba(0,0,0,0.2)');
+    ctx.strokeStyle = recessSG;
+    ctx.stroke(recessPath);
+
+    ctx.restore();
 
     // ---- Edge shadows: where valid cells meet blocked cells ----
     for (let r = 0; r < TRAY_ROWS; r++) {

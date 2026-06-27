@@ -102,23 +102,15 @@ CSS custom properties on `:root` define light theme; `@media (prefers-color-sche
 
 ## Key rendering constraints
 
-Do not use `roundRect` or per-cell strokes. Two path-building approaches are used:
-
-### Per-cell path (`createRoundedGridPath`)
-Used only for the **tray recess**. Each filled cell contributes a sub-path with `moveTo`/`lineTo`/`arcTo` (not `rect`). Only **convex** corners are rounded (exactly 1 of 4 cells filled at a grid intersection). **Concave** corners (3 of 4 filled) are handled separately via `drawConcaveFill()` after the main fill. Sub-paths are combined via `path.addPath(cp)`.
-
-### Outer perimeter path (`createOuterBoundaryPath`)
-Used for **piece rendering** (tray pieces, bank, drag clone). Traces only the outer boundary of a polyomino shape via edge-cancellation + perimeter walk. Both **convex** and **concave** corners are rounded with `arcTo` — no separate concave fill step needed. The resulting `Path2D` serves as the clip region for fill + gradient + inner stroke.
+Do not use `roundRect` (except for the outer tray frame). All piece and recess shapes are built via `createOuterBoundaryPath(grid, ox, oy, cs)` which traces the outer perimeter of a polyomino via edge-cancellation + perimeter walk. Both **convex** and **concave** corners are rounded with `arcTo` in a single `Path2D`. The path is used as the clip region for fill + gradient + inner stroke.
 
 ### Piece fill gradient
 Pieces use a 3-stop bevel gradient (lighter → base color → darker) matching the tray's approach. Stops are computed per-piece via `lighter(hex, amt)` and `darker(hex, amt)` which blend the base color toward white or black.
 
 ### Inner stroke
-Pieces have an inner stroke along the outer perimeter (inside the clip, double line-width so only the inner half shows). The stroke uses its own bevel gradient: lighter at top-left, near-transparent at center, darker at bottom-right.
+All shapes (pieces and tray recess) have an inner stroke along the outer perimeter (inside the clip, double line-width so only the inner half shows). The stroke uses its own bevel gradient: lighter at top-left, near-transparent at center, darker at bottom-right.
+
+### Tray recess
+The tray recess uses the same `createOuterBoundaryPath` + clip + fill + inner stroke approach as pieces. The recess fill is solid `trayRecess` color; the stroke gradient uses semi-transparent light/dark stops.
 
 The corner radius scales with cell size: `max(2, min(round(cs * 0.1), 8))`. No drop shadows, no piece ID numbers.
-
-### Concave corner helpers
-
-- `findConcaveCorners(grid, ox, oy, cs)` — returns `[{cx, cy, emptyQ}]` for each grid intersection where exactly 3 of 4 cells are filled. `emptyQ` is `'nw'|'ne'|'sw'|'se'` indicating the empty quadrant.
-- `drawConcaveFill(ctx, cx, cy, rad, emptyQ, color, grad)` — draws the arc sector at one concave corner. Used in tray recess rendering only (pieces use `createOuterBoundaryPath` which rounds concave corners natively).
