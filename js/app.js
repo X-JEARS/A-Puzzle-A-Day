@@ -95,6 +95,10 @@ const TRANSLATIONS = {
         exposed:'露出', confirm_reset:'确定要重置吗？所有进度将丢失。',
         drag_hint:'拖入托盘 | 单击旋转 | 双击翻转',
         tray_empty:'所有方块已放入托盘 ✓',
+        return_to_today:'返回今天',
+        cal_weekdays:['日','一','二','三','四','五','六'],
+        no_pieces_data:'该记录不包含拼图数据，无法恢复',
+        viewing_past:'查看历史: ',
     },
     'en': {
         title:'A Puzzle A Day', today:'Today\'s Target',
@@ -105,6 +109,10 @@ const TRANSLATIONS = {
         exposed:'Exposed', confirm_reset:'Are you sure? All progress will be lost.',
         drag_hint:'Drag to board | Click to rotate | Double-click to flip',
         tray_empty:'All pieces placed ✓',
+        return_to_today:'Return to Today',
+        cal_weekdays:['Su','Mo','Tu','We','Th','Fr','Sa'],
+        no_pieces_data:'This entry has no puzzle data to restore',
+        viewing_past:'Viewing: ',
     },
     'ja': {
         title:'A Puzzle A Day', today:'今日の目標',
@@ -115,6 +123,10 @@ const TRANSLATIONS = {
         exposed:'露出', confirm_reset:'リセットしますか？すべての進行状況が失われます。',
         drag_hint:'ドラッグで配置 | クリックで回転 | ダブルクリックで反転',
         tray_empty:'すべてのピースが配置されました ✓',
+        return_to_today:'今日に戻る',
+        cal_weekdays:['日','月','火','水','木','金','土'],
+        no_pieces_data:'この記録にはパズルデータがありません',
+        viewing_past:'履歴表示: ',
     },
     'ko': {
         title:'A Puzzle A Day', today:'오늘의 목표',
@@ -125,6 +137,10 @@ const TRANSLATIONS = {
         exposed:'노출', confirm_reset:'초기화하시겠습니까? 모든 진행 상황이 손실됩니다.',
         drag_hint:'드래그하여 배치 | 클릭 회전 | 더블클릭 뒤집기',
         tray_empty:'모든 조각이 배치되었습니다 ✓',
+        return_to_today:'오늘로 돌아가기',
+        cal_weekdays:['일','월','화','수','목','금','토'],
+        no_pieces_data:'이 기록에는 퍼즐 데이터가 없습니다',
+        viewing_past:'기록 보기: ',
     },
 };
 
@@ -155,6 +171,9 @@ const gameState = {
     cellSize: 52,
     language: 'zh-CN',
     theme: 'auto',
+    viewingDate: null,                              // null=today, "YYYY-MM-DD"=viewing past
+    calendarYear: new Date().getFullYear(),          // calendar dialog current year
+    calendarMonth: new Date().getMonth(),            // calendar dialog current month (0-based)
     undoStack: [],
     // Drag state
     dragPieceId: null,
@@ -344,6 +363,7 @@ function resetAll() {
     if (gameState.undoStack.length > 0 || gameState.pieces.some(p => p.row >= 0)) {
         if (!confirm(t('confirm_reset') || '确定要重置吗？')) return;
     }
+    gameState.viewingDate = null;
     clearDragState();
     initPieces();
     saveGame();
@@ -367,14 +387,22 @@ function getUncoveredValidCells() {
     return u;
 }
 
-function getTodayTarget() {
-    const now = new Date();
+function getTodayTarget(dateOrStr) {
+    let d;
+    if (dateOrStr instanceof Date) {
+        d = dateOrStr;
+    } else if (typeof dateOrStr === 'string') {
+        const p = parseDateKey(dateOrStr);
+        d = new Date(p.year, p.month, p.day);
+    } else {
+        d = new Date();
+    }
     const months = I18N_MONTHS[gameState.language];
     const weekdays = I18N_WEEKDAYS[gameState.language];
     return {
-        targetMonth: months[now.getMonth()],
-        targetDay: String(now.getDate()),
-        targetWeekday: weekdays[now.getDay()],
+        targetMonth: months[d.getMonth()],
+        targetDay: String(d.getDate()),
+        targetWeekday: weekdays[d.getDay()],
     };
 }
 
@@ -393,15 +421,20 @@ function handleWin() {
     const t = getTodayTarget();
     document.getElementById('win-date').textContent = `${t.targetMonth} ${t.targetDay} ${t.targetWeekday}`;
     document.getElementById('win-overlay').classList.remove('hidden');
-    saveHistory(formatDateKey());
+    if (!gameState.viewingDate) saveHistory(formatDateKey());
 }
 
 // ============================================================
 // SAVE / LOAD
 // ============================================================
-function formatDateKey() {
-    const n = new Date();
-    return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+function formatDateKey(date) {
+    const d = date || new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function parseDateKey(ds) {
+    const parts = ds.split('-');
+    return { year: parseInt(parts[0]), month: parseInt(parts[1]) - 1, day: parseInt(parts[2]) };
 }
 
 const SK = 'puzzle_a_day_v3', HK = 'puzzle_a_day_hist_v3', TK = 'puzzle_a_day_cfg_v3';
@@ -409,7 +442,7 @@ const SK = 'puzzle_a_day_v3', HK = 'puzzle_a_day_hist_v3', TK = 'puzzle_a_day_cf
 function saveGame() {
     try { localStorage.setItem(SK, JSON.stringify({
         pieces: gameState.pieces.map(p => ({id:p.id,rotation:p.rotation,reflected:p.reflected,row:p.row,col:p.col})),
-        date: formatDateKey(), ts: Date.now()
+        date: formatDateKey()
     })); } catch(e) {}
 }
 
@@ -431,8 +464,9 @@ function saveHistory(ds) {
     try {
         const r = localStorage.getItem(HK);
         const h = r ? JSON.parse(r) : {};
-        const t = getTodayTarget();
-        h[ds] = { month:t.targetMonth, day:t.targetDay, weekday:t.targetWeekday, ts:Date.now() };
+        h[ds] = {
+            pieces: gameState.pieces.map(p => ({id:p.id, rotation:p.rotation, reflected:p.reflected, row:p.row, col:p.col}))
+        };
         localStorage.setItem(HK, JSON.stringify(h));
     } catch(e) {}
 }
@@ -440,6 +474,61 @@ function saveHistory(ds) {
 function loadHistory() {
     try { const r = localStorage.getItem(HK); return r ? JSON.parse(r) : {}; }
     catch(e) { return {}; }
+}
+
+function restoreHistoryState(dateKey) {
+    const history = loadHistory();
+    const entry = history[dateKey];
+    if (!entry) return false;
+
+    // Guard: old entries may not have pieces data
+    if (!entry.pieces || !Array.isArray(entry.pieces)) {
+        alert(t('no_pieces_data'));
+        return false;
+    }
+
+    // Auto-save current board state before overwriting
+    saveGame();
+
+    // Load pieces from history
+    gameState.pieces.forEach(p => {
+        const saved = entry.pieces.find(s => s.id === p.id);
+        if (saved) {
+            p.rotation = saved.rotation;
+            p.reflected = saved.reflected;
+            p.row = saved.row;
+            p.col = saved.col;
+        }
+    });
+
+    gameState.viewingDate = dateKey;
+    gameState.undoStack = [];
+    clearDragState();
+
+    renderTray();
+    renderPieceBank();
+    updateAllI18n();
+    updateTargetDisplay();
+
+    // Close dialog
+    document.getElementById('history-overlay').classList.add('hidden');
+
+    return true;
+}
+
+function returnToToday() {
+    gameState.viewingDate = null;
+    gameState.undoStack = [];
+    clearDragState();
+
+    // Try to reload today's saved state; otherwise init fresh
+    const loaded = loadGame();
+    if (!loaded) initPieces();
+
+    renderTray();
+    renderPieceBank();
+    updateAllI18n();
+    updateTargetDisplay();
 }
 
 function loadSettings() {
@@ -718,18 +807,20 @@ function renderTray() {
 }
 
 function updateTargetDisplay() {
-    const t = getTodayTarget();
+    const isViewing = !!gameState.viewingDate;
+    const target = getTodayTarget(isViewing ? gameState.viewingDate : undefined);
     const el = document.getElementById('target-date');
-    const pc = gameState.pieces.filter(p => p.row >= 0).length;
-    const uc = getUncoveredValidCells().length;
-    const cOk = isDark() ? '#e0dce8' : '#3d3226';
-    const cG = '#2ECC71', cB = '#E74C3C';
-    el.innerHTML =
-        `<span style="font-weight:700;">${t.targetMonth} · ${t.targetDay} · ${t.targetWeekday}</span>` +
-        `<span style="margin:0 6px;color:var(--text-secondary);">|</span>` +
-        `<span style="color:${pc===10?cG:cOk};font-size:0.82rem;">🧩 ${pc}/10</span>` +
-        `<span style="margin:0 4px;color:var(--text-secondary);">·</span>` +
-        `<span style="color:${uc===3?cG:uc<3?cB:cOk};font-size:0.82rem;">👁 ${uc}/3</span>`;
+    const labelEl = document.querySelector('.date-label');
+
+    // Update label
+    labelEl.textContent = isViewing ? t('viewing_past') : t('today');
+
+    // Date only
+    el.innerHTML = `<span style="font-weight:700;font-size:1.05rem;">${target.targetMonth} · ${target.targetDay} · ${target.targetWeekday}</span>`;
+
+    // Show/hide return-to-today button
+    const btn = document.getElementById('btn-return-today');
+    if (btn) btn.style.display = isViewing ? '' : 'none';
 }
 
 // ============================================================
@@ -1128,8 +1219,7 @@ function setupUI() {
         renderLangList();
     });
     document.getElementById('btn-history').addEventListener('click', () => {
-        document.getElementById('history-overlay').classList.remove('hidden');
-        renderHistoryList();
+        openHistoryDialog();
     });
     document.getElementById('btn-close-win').addEventListener('click', () => {
         document.getElementById('win-overlay').classList.add('hidden');
@@ -1140,6 +1230,26 @@ function setupUI() {
     document.getElementById('btn-close-lang').addEventListener('click', () => {
         document.getElementById('lang-overlay').classList.add('hidden');
     });
+
+    // Calendar navigation
+    document.getElementById('cal-prev-year').addEventListener('click', () => navigateCalendar(-1, 0));
+    document.getElementById('cal-prev-month').addEventListener('click', () => navigateCalendar(0, -1));
+    document.getElementById('cal-next-month').addEventListener('click', () => navigateCalendar(0, 1));
+    document.getElementById('cal-next-year').addEventListener('click', () => navigateCalendar(1, 0));
+
+    // Calendar day click (event delegation)
+    document.getElementById('calendar-grid').addEventListener('click', (e) => {
+        const dayEl = e.target.closest('.cal-day.completed');
+        if (!dayEl) return;
+        const dateKey = dayEl.dataset.date;
+        if (dateKey) restoreHistoryState(dateKey);
+    });
+
+    // Return to today
+    document.getElementById('btn-return-today').addEventListener('click', () => {
+        returnToToday();
+    });
+
     document.querySelectorAll('.overlay').forEach(ov => {
         ov.addEventListener('click', (e) => { if (e.target === ov) ov.classList.add('hidden'); });
     });
@@ -1191,20 +1301,83 @@ function setLanguage(code) {
     document.getElementById('lang-overlay').classList.add('hidden');
 }
 
-function renderHistoryList() {
-    const list = document.getElementById('history-list');
+function openHistoryDialog() {
+    const now = new Date();
+    gameState.calendarYear = now.getFullYear();
+    gameState.calendarMonth = now.getMonth();
+    document.getElementById('history-overlay').classList.remove('hidden');
+    renderCalendar();
+}
+
+function renderCalendar() {
+    const y = gameState.calendarYear;
+    const m = gameState.calendarMonth;
+    const lang = gameState.language;
+    const months = I18N_MONTHS[lang];
+
+    // Header
+    document.getElementById('cal-month-year').textContent = `${months[m]} ${y}`;
+
+    // Grid
+    const grid = document.getElementById('calendar-grid');
     const history = loadHistory();
-    const entries = Object.entries(history).sort((a, b) => b[0].localeCompare(a[0]));
-    if (entries.length === 0) {
-        list.innerHTML = `<p style="text-align:center;color:var(--text-secondary);padding:20px;">${t('no_history')}</p>`;
-        return;
+    const todayKey = formatDateKey();
+    const now = new Date();
+    const todayDay = now.getDate();
+    const todayMonth = now.getMonth();
+    const todayYear = now.getFullYear();
+
+    // Short weekday headers
+    const shortDays = TRANSLATIONS[lang].cal_weekdays || I18N_WEEKDAYS[lang].map(w => w.slice(0, 2));
+
+    let html = '';
+    for (let d = 0; d < 7; d++) {
+        html += `<div class="cal-day-header">${shortDays[d]}</div>`;
     }
-    list.innerHTML = entries.map(([date, data]) => `
-        <div class="history-item">
-            <span class="date">${date}</span>
-            <span class="target-exposed">${t('exposed')}: ${data.month} · ${data.day} · ${data.weekday}</span>
-        </div>
-    `).join('');
+
+    // First day of month (0=Sun) and days in month
+    const firstDay = new Date(y, m, 1).getDay();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+    // Leading empty cells (previous month)
+    for (let i = 0; i < firstDay; i++) {
+        html += `<div class="cal-day other-month"></div>`;
+    }
+
+    // Day cells
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateKey = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const isCompleted = !!history[dateKey];
+        const isToday = (y === todayYear && m === todayMonth && day === todayDay);
+        let cls = 'cal-day';
+        if (isCompleted) cls += ' completed';
+        if (isToday) cls += ' today';
+        const dataAttr = isCompleted ? ` data-date="${dateKey}"` : '';
+        html += `<div class="${cls}"${dataAttr}>${day}</div>`;
+    }
+
+    // Trailing empty cells
+    const totalCells = firstDay + daysInMonth;
+    const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+    for (let i = 0; i < remaining; i++) {
+        html += `<div class="cal-day other-month"></div>`;
+    }
+
+    grid.innerHTML = html;
+}
+
+function navigateCalendar(dy, dm) {
+    gameState.calendarMonth += dm;
+    gameState.calendarYear += dy;
+    if (gameState.calendarMonth < 0) {
+        gameState.calendarMonth = 11;
+        gameState.calendarYear--;
+    }
+    if (gameState.calendarMonth > 11) {
+        gameState.calendarMonth = 0;
+        gameState.calendarYear++;
+    }
+    renderCalendar();
 }
 
 // ============================================================

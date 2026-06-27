@@ -38,10 +38,20 @@ npx serve .
 - **No drop indicator**: the tray does not show green/red placement previews. The floating clone following the cursor is the sole drag visual.
 - **No piece shadows or numbers**: pieces render as clean colored shapes with bevel gradients only — no drop shadows, no ID numbers.
 
+### Calendar history
+
+- **History button** (📅) opens a calendar dialog showing a monthly grid. Days with completed puzzles are highlighted green; today has an accent border.
+- **Month navigation**: `◀◀` (prev year), `◀` (prev month), `▶` (next month), `▶▶` (next year).
+- **Click a green day** → restores that day's puzzle arrangement onto the board. Current in-progress state is auto-saved before restoring.
+- **Return to Today** button appears inline in the date display when viewing a past solution. Clicking it reloads today's saved state.
+- `resetAll()` also clears the viewing state, returning to today's fresh puzzle.
+- Calendar rendering functions: `openHistoryDialog()`, `renderCalendar()`, `navigateCalendar()` in `js/app.js`.
+
 ### Game state
 
-- `gameState` object in `js/app.js` holds `pieces[]`, `cellSize`, `language`, `theme`, `undoStack[]`, and drag/click tracking fields.
+- `gameState` object in `js/app.js` holds `pieces[]`, `cellSize`, `language`, `theme`, `viewingDate`, `calendarYear`, `calendarMonth`, `undoStack[]`, and drag/click tracking fields.
 - Key drag fields: `dragPieceId`, `dragFromTray`, `dragMoved`, `dragGrabOffsetX/Y` (precise grab point on the piece), `dragBankContainer` (DOM ref to hidden bank element), `dragClientX/Y` (current cursor position).
+- `viewingDate`: `null` = today's puzzle; `"YYYY-MM-DD"` string = viewing a past completed solution. When set, the date label shows "Viewing:" and a "Return to Today" button appears.
 - Each piece: `id`, `baseShape` (2D array), `rotation` (0-3), `reflected` (bool), `row`/`col` (-1 = in bank, ≥0 = placed on tray).
 - Piece cells total 47; tray valid cells = 50 (56 - 6 blocked); uncovered = 3 = today's date.
 - `bankCellSize()` computes proportional bank cell size: `max(13, min(24, round(cs * 0.45)))`.
@@ -50,11 +60,11 @@ npx serve .
 
 | Key | Content |
 |-----|---------|
-| `puzzle_a_day_v3` | Current game state (pieces, date) |
-| `puzzle_a_day_hist_v3` | History object keyed by date string |
-| `puzzle_a_day_cfg_v3` | Settings (language, theme) |
+| `puzzle_a_day_v3` | Current game state: `{ pieces: [{id,rotation,reflected,row,col}], date: "YYYY-MM-DD" }` |
+| `puzzle_a_day_hist_v3` | History object: `{ "YYYY-MM-DD": { pieces: [...] } }` — keyed by date, stores piece arrangement only |
+| `puzzle_a_day_cfg_v3` | Settings: `{ language, theme }` |
 
-Versioned keys prevent conflicts across iterations.
+Versioned keys prevent conflicts across iterations. History entries store only `pieces` — month/day/weekday are derived from the date key via `getTodayTarget()`.
 
 ### Theming
 
@@ -62,7 +72,7 @@ CSS custom properties on `:root` define light theme; `@media (prefers-color-sche
 
 ### i18n
 
-4 languages (zh-CN, en, ja, ko). `CELL_META` 2D array is rebuilt when language changes (`buildCellMeta()`). UI text uses `data-i18n` attributes populated by `updateAllI18n()` which reads from the `TRANSLATIONS` object.
+4 languages (zh-CN, en, ja, ko). `CELL_META` 2D array is rebuilt when language changes (`buildCellMeta()`). UI text uses `data-i18n` attributes populated by `updateAllI18n()` which reads from the `TRANSLATIONS` object. Calendar weekday headers use the `cal_weekdays` i18n key (7-element array, Sunday-first).
 
 ### CSV data files
 
