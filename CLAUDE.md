@@ -38,7 +38,7 @@ npx serve .
 
 ### Rendering: Dual approach
 
-- **Tray** (`#board-canvas`): Canvas 2D API with `devicePixelRatio` scaling. The tray recess (L-shaped playing area) and placed pieces are rendered on the same canvas. Tray recess is built via `createRoundedGridPath()` which constructs per-cell paths with convex-only `arcTo` rounding; concave corners are filled afterward via `drawConcaveFill()`. Pieces use `drawPieceAt()` which clips to the outer perimeter path (`createOuterBoundaryPath`), fills with a 3-stop bevel gradient (lighter → base → darker, computed per-piece via `lighter()`/`darker()` helpers), then applies an inner stroke with its own bevel gradient along the perimeter. No drop shadows, no piece numbers.
+- **Tray** (`#board-canvas`): Canvas 2D API with `devicePixelRatio` scaling. The tray recess (L-shaped playing area) and placed pieces are rendered on the same canvas. Both tray recess and pieces use `createOuterBoundaryPath()` to build a single perimeter `Path2D` with `arcTo` rounding at both convex and concave corners. The path serves as the clip region for fill + inner stroke. Pieces add a 3-stop bevel gradient (lighter → base color → darker, computed per-piece via `lighter()`/`darker()` helpers); the recess uses a solid `trayRecess` fill. Both apply an inner bevel-gradiented stroke along the perimeter. No drop shadows, no piece numbers.
 - **Piece bank** (`#piece-bank`): Individual `<canvas>` elements inside `<div>` containers in the DOM, one per unplaced piece. Rendered with the same `createOuterBoundaryPath()` clip + 3-stop gradient + inner stroke technique as tray pieces. Bank piece cell size (`bankCellSize()`) scales proportionally to tray cell size (`cs * 0.45`, clamped to [13, 24]).
 
 ### Responsive layout
