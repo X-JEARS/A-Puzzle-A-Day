@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>A Puzzle A Day - 每日拼图</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header id="header">
+            <h1 class="title" data-i18n="title">A Puzzle A Day</h1>
+            <div class="header-controls">
+                <button id="btn-lang" class="btn-icon" title="Language">🌐</button>
+                <button id="btn-theme" class="btn-icon" title="Theme">🌙</button>
+                <button id="btn-history" class="btn-icon" title="History">📅</button>
+            </div>
+        </header>
+
+        <!-- Date Display -->
+        <div id="date-display" class="date-display">
+            <span class="date-label" data-i18n="today">今日目标</span>
+            <span id="target-date" class="date-target"></span>
+        </div>
+
+        <!-- Game Area: Tray + Bank -->
+        <div id="game-area">
+            <div id="board-container">
+                <canvas id="board-canvas"></canvas>
+            </div>
+            <div id="piece-bank" class="piece-bank">
+                <div id="piece-list" class="piece-list"></div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div id="controls" class="controls">
+            <button id="btn-reset" class="btn-action btn-danger" data-i18n="reset">🔁 重置</button>
+            <button id="btn-undo" class="btn-action" data-i18n="undo">↩️ 撤销</button>
+        </div>
+
+        <!-- Win Dialog -->
+        <div id="win-overlay" class="overlay hidden">
+            <div class="dialog">
+                <h2 data-i18n="congrats">🎉 恭喜！</h2>
+                <p data-i18n="solved">你完成了今天的拼图！</p>
+                <p id="win-date"></p>
+                <button id="btn-close-win" class="btn-action" data-i18n="close">关闭</button>
+            </div>
+        </div>
+
+        <!-- History Dialog -->
+        <div id="history-overlay" class="overlay hidden">
+            <div class="dialog history-dialog">
+                <h2 data-i18n="history">拼图历史</h2>
+                <div id="history-list" class="history-list"></div>
+                <button id="btn-close-history" class="btn-action" data-i18n="close">关闭</button>
+            </div>
+        </div>
+
+        <!-- Language Dialog -->
+        <div id="lang-overlay" class="overlay hidden">
+            <div class="dialog">
+                <h2 data-i18n="select_lang">选择语言</h2>
+                <div id="lang-list" class="lang-list"></div>
+                <button id="btn-close-lang" class="btn-action" data-i18n="close">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

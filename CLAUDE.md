@@ -1,0 +1,74 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Overview
+
+"A Puzzle A Day" is a single-page web puzzle game: fit 10 polyomino pieces into a 7×8 tray so that exactly 3 cells remain uncovered, showing today's month, day, and weekday. No build system — plain HTML/CSS/JS served directly from the filesystem. No external dependencies.
+
+## Commands
+
+No build, lint, or test commands exist. To run the game, open `index.html` in a browser, or serve locally:
+
+```bash
+# Simple HTTP server (any of these work)
+python3 -m http.server 8080
+npx serve .
+```
+
+## Architecture
+
+### Rendering: Dual approach
+
+- **Tray** (`#board-canvas`): Canvas 2D API with `devicePixelRatio` scaling. Adjacent cells are merged into a single compound `Path2D` (using `rect`, not `roundRect`) so there are zero visible seams between cells. Pieces on the tray are rendered to the same canvas via `drawPieceAt()` which clips to a compound path and fills with a bevel gradient — no per-cell strokes, no drop shadows, no piece numbers.
+- **Piece bank** (`#piece-bank`): Individual `<canvas>` elements inside `<div>` containers in the DOM, one per unplaced piece. Rendered with the same compound-Path2D technique. Bank piece cell size (`bankCellSize()`) scales proportionally to tray cell size (`cs * 0.45`, clamped to [13, 24]).
+
+### Responsive layout
+
+- **Portrait** (`width ≤ height`): `#game-area` uses `flex-direction: column` — tray on top, bank below. Bank spans full width. `calcCellSize()` uses both width and height constraints so all content fits viewport without scrolling (`body { overflow: hidden }`).
+- **Landscape** (`width > height`): `#game-area` uses `flex-direction: row` via `@media (orientation: landscape)` — tray on left, bank on right. Bank limited to narrow width (`2 × 4 × bcs + 48`); overflows scroll internally. CellSize formula differs: width budget subtracts bank width, height budget excludes bank (since it's beside the tray).
+- Orientation detection in JS via `window.innerWidth > window.innerHeight`. CSS uses `@media (orientation: landscape)`.
+
+### Interaction model
+
+- **Drag to place**: `pointerdown` on a bank piece → bank piece is hidden, after 5px movement a floating `position:fixed` canvas clone follows the cursor from the exact grab point (`dragGrabOffsetX/Y`). On release, the snapped grid position is calculated from cursor position minus grab offset (not piece-center approximation). If valid, piece is placed; otherwise re-appears in bank.
+- **Drag from tray**: `pointerdown` on an occupied tray cell → after 5px movement, piece removed from board (bank not rendered until drop to avoid visual duplication), clone follows cursor from grab point. On release, re-placed on tray or returned to bank.
+- **Click = rotate** (280ms timer), **double-click = flip** (350ms window). Uses `gameState.clickPieceId` in the timer callback to avoid closure scope bugs.
+- **No click-to-pickup**: clicking a placed piece does nothing — dragging is the only way to remove a piece.
+- **No drop indicator**: the tray does not show green/red placement previews. The floating clone following the cursor is the sole drag visual.
+- **No piece shadows or numbers**: pieces render as clean colored shapes with bevel gradients only — no drop shadows, no ID numbers.
+
+### Game state
+
+- `gameState` object in `js/app.js` holds `pieces[]`, `cellSize`, `language`, `theme`, `undoStack[]`, and drag/click tracking fields.
+- Key drag fields: `dragPieceId`, `dragFromTray`, `dragMoved`, `dragGrabOffsetX/Y` (precise grab point on the piece), `dragBankContainer` (DOM ref to hidden bank element), `dragClientX/Y` (current cursor position).
+- Each piece: `id`, `baseShape` (2D array), `rotation` (0-3), `reflected` (bool), `row`/`col` (-1 = in bank, ≥0 = placed on tray).
+- Piece cells total 47; tray valid cells = 50 (56 - 6 blocked); uncovered = 3 = today's date.
+- `bankCellSize()` computes proportional bank cell size: `max(13, min(24, round(cs * 0.45)))`.
+
+### localStorage keys
+
+| Key | Content |
+|-----|---------|
+| `puzzle_a_day_v3` | Current game state (pieces, date) |
+| `puzzle_a_day_hist_v3` | History object keyed by date string |
+| `puzzle_a_day_cfg_v3` | Settings (language, theme) |
+
+Versioned keys prevent conflicts across iterations.
+
+### Theming
+
+CSS custom properties on `:root` define light theme; `@media (prefers-color-scheme: dark)` overrides for dark; `.dark`/`.light` body classes force a specific theme. Tray uses `getComputedStyle` to read CSS variables at render time. `isDark()` returns the effective theme based on user setting + media query.
+
+### i18n
+
+4 languages (zh-CN, en, ja, ko). `CELL_META` 2D array is rebuilt when language changes (`buildCellMeta()`). UI text uses `data-i18n` attributes populated by `updateAllI18n()` which reads from the `TRANSLATIONS` object.
+
+### CSV data files
+
+- `方块设计.csv` (UTF-8): 10 piece shapes — `1` = filled cell, `0` = empty.
+- `托盘设计.csv`: Tray layout — months, days 1-31, and weekdays. **This file was GBK-encoded** and was converted to UTF-8 via `iconv -f GBK -t UTF-8`. If you need to re-read the original, convert first.
+
+## Key rendering constraints
+
+Do not introduce `roundRect`, per-cell strokes, or per-cell gradient fills. The entire visual premise is that adjacent cells merge into one seamless shape. Use compound `Path2D` with plain `rect` calls, then `ctx.clip(path)` + single fill/gradient — see `createPiecePath()` and `drawPieceAt()` in `js/app.js`.
