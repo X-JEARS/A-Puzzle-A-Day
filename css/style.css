@@ -315,6 +315,52 @@ body {
     color: #fff;
 }
 
+/* === Visitor Counter Footer === */
+#site-footer {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 0 4px;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    opacity: 0.6;
+    transition: opacity 0.2s, color 0.3s;
+    flex-shrink: 0;
+}
+
+#site-footer:hover {
+    opacity: 0.9;
+}
+
+.visitor-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.visitor-icon {
+    opacity: 0.7;
+    flex-shrink: 0;
+}
+
+.visitor-label {
+    margin-right: 2px;
+}
+
+.visitor-divider {
+    opacity: 0.4;
+    font-size: 0.65rem;
+}
+
+.visitor-count {
+    font-weight: 600;
+    color: var(--accent);
+    min-width: 1.5em;
+    text-align: center;
+}
+
 /* === Overlay / Dialog === */
 .overlay {
     position: fixed;

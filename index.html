@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>A Puzzle A Day - 每日拼图</title>
     <link rel="stylesheet" href="css/style.css">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 </head>
 <body>
     <div id="app">
@@ -89,6 +90,33 @@
                 <span data-i18n="undo">撤销</span>
             </button>
         </div>
+
+        <!-- Visitor Counter Footer -->
+        <footer id="site-footer">
+            <span class="visitor-stat">
+                <svg class="visitor-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <span class="visitor-label" data-i18n="stats_views">浏览</span>
+                <span id="busuanzi_container_site_pv" class="visitor-count">
+                    <span id="busuanzi_value_site_pv">-</span>
+                </span>
+            </span>
+            <span class="visitor-divider">|</span>
+            <span class="visitor-stat">
+                <svg class="visitor-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <span class="visitor-label" data-i18n="stats_visitors">访客</span>
+                <span id="busuanzi_container_site_uv" class="visitor-count">
+                    <span id="busuanzi_value_site_uv">-</span>
+                </span>
+            </span>
+        </footer>
 
         <!-- Win Dialog -->
         <div id="win-overlay" class="overlay hidden">
