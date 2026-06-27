@@ -1020,9 +1020,7 @@ function renderTray() {
     ctx.strokeStyle = recessSG;
     ctx.stroke(recessPath);
 
-    ctx.restore();
-
-    // ---- Edge shadows: where valid cells meet blocked cells ----
+    // ---- Edge shadows: where valid cells meet blocked cells (inside clip) ----
     for (let r = 0; r < TRAY_ROWS; r++) {
         for (let c = 0; c < TRAY_COLS; c++) {
             if (isBlocked(r, c)) continue;
@@ -1049,6 +1047,8 @@ function renderTray() {
             }
         }
     }
+
+    ctx.restore();
 
     // ---- Cell labels ----
     for (let r = 0; r < TRAY_ROWS; r++) {
