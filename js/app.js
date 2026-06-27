@@ -653,17 +653,64 @@ function getPieceColor(pid) {
 // RENDERING: Continuous piece shape (NO per-cell strokes)
 // ============================================================
 
-// Create a compound path from piece cells. Uses plain rect so adjacent
-// cells merge into a single seamless shape with no visible boundaries.
-function createPiecePath(shape, ox, oy, cs) {
-    const p = new Path2D();
-    for (let r = 0; r < shape.length; r++) {
-        for (let c = 0; c < shape[r].length; c++) {
-            if (shape[r][c] !== 1) continue;
-            p.rect(ox + c * cs, oy + r * cs, cs, cs);
+// Create a compound rounded path from a 2D grid (0=empty, 1=filled).
+// Only rounds convex corners (exactly 1 of 4 cells filled at a grid
+// intersection → the shape outline bulges outward). Concave corners
+// (3 filled) and interior junctions stay sharp so adjacent cells
+// remain seamless.
+function createRoundedGridPath(grid, ox, oy, cs) {
+    const rad = Math.max(2, Math.min(Math.round(cs * 0.1), 8));
+    const rows = grid.length;
+    const cols = grid[0]?.length || 0;
+    const path = new Path2D();
+
+    const filled = (rr, cc) => rr >= 0 && rr < rows && cc >= 0 && cc < cols && grid[rr][cc] === 1;
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (grid[r][c] !== 1) continue;
+
+            const x = ox + c * cs;
+            const y = oy + r * cs;
+
+            // Convex = exactly 1 of the 4 surrounding cells is filled
+            function convex(gr, gc) {
+                let n = 0;
+                if (filled(gr - 1, gc - 1)) n++;
+                if (filled(gr - 1, gc)) n++;
+                if (filled(gr, gc - 1)) n++;
+                if (filled(gr, gc)) n++;
+                return n === 1;
+            }
+
+            const tl = convex(r, c);
+            const tr = convex(r, c + 1);
+            const br = convex(r + 1, c + 1);
+            const bl = convex(r + 1, c);
+
+            const cp = new Path2D();
+            cp.moveTo(x + (tl ? rad : 0), y);
+            cp.lineTo(x + cs - (tr ? rad : 0), y);
+            if (tr) cp.arcTo(x + cs, y, x + cs, y + rad, rad);
+            cp.lineTo(x + cs, y + cs - (br ? rad : 0));
+            if (br) cp.arcTo(x + cs, y + cs, x + cs - rad, y + cs, rad);
+            cp.lineTo(x + (bl ? rad : 0), y + cs);
+            if (bl) cp.arcTo(x, y + cs, x, y + cs - rad, rad);
+            cp.lineTo(x, y + (tl ? rad : 0));
+            if (tl) cp.arcTo(x, y, x + rad, y, rad);
+            cp.closePath();
+
+            path.addPath(cp);
         }
     }
-    return p;
+
+    return path;
+}
+
+// Create a compound path from piece shape. Delegates to createRoundedGridPath
+// so pieces get rounded convex corners with seamless internal boundaries.
+function createPiecePath(shape, ox, oy, cs) {
+    return createRoundedGridPath(shape, ox, oy, cs);
 }
 
 // Draw a piece at pixel position (no grid snap) — used for drag clone
@@ -732,15 +779,15 @@ function renderTray() {
     ctx.roundRect(0.5, 0.5, w - 1, h - 1, outerR);
     ctx.stroke();
 
-    // ---- Recessed area as a SINGLE merged surface (no per-cell gaps) ----
-    // Build compound path of ALL valid cells
-    const recessPath = new Path2D();
+    // ---- Recessed area with rounded convex corners ----
+    const trayGrid = [];
     for (let r = 0; r < TRAY_ROWS; r++) {
+        trayGrid[r] = [];
         for (let c = 0; c < TRAY_COLS; c++) {
-            if (isBlocked(r, c)) continue;
-            recessPath.rect(cellX(c), cellY(r), cs, cs);
+            trayGrid[r][c] = isBlocked(r, c) ? 0 : 1;
         }
     }
+    const recessPath = createRoundedGridPath(trayGrid, TRAY_PADDING, TRAY_PADDING, cs);
     ctx.fillStyle = trayRecess;
     ctx.fill(recessPath);
 
@@ -859,11 +906,8 @@ function renderPieceBank() {
 
         const color = getPieceColor(piece.id);
 
-        // Main shape path (merged cells, no internal boundaries)
-        const mp = new Path2D();
-        for (let r = 0; r < rows; r++)
-            for (let c = 0; c < cols; c++)
-                if (shape[r][c] === 1) mp.rect(c*bcs, r*bcs, bcs, bcs);
+        // Main shape path (convex corners rounded)
+        const mp = createRoundedGridPath(shape, 0, 0, bcs);
 
         pctx.save();
         pctx.clip(mp);
@@ -1053,11 +1097,8 @@ function createDragClone() {
 
     const color = getPieceColor(piece.id);
 
-    // Main body (merged cells, no internal boundaries)
-    const mp = new Path2D();
-    for (let r = 0; r < rows; r++)
-        for (let c = 0; c < cols; c++)
-            if (shape[r][c] === 1) mp.rect(c*cs, r*cs, cs, cs);
+    // Main body (convex corners rounded)
+    const mp = createRoundedGridPath(shape, 0, 0, cs);
 
     dctx.save();
     dctx.clip(mp);
