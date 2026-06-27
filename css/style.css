@@ -153,16 +153,35 @@ body {
     border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
     background: var(--bg-card);
+    color: var(--accent);
     cursor: pointer;
     font-size: 1.1rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
     transition: transform 0.12s, box-shadow 0.12s;
     box-shadow: var(--shadow);
 }
 
+.btn-icon svg {
+    display: block;
+}
+
 .btn-icon:active { transform: scale(0.93); }
+
+/* Auto-mode indicator dot */
+.btn-icon.theme-auto::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.7;
+}
 
 /* === Date Display === */
 .date-display {
@@ -278,6 +297,14 @@ body {
 .btn-action:active { transform: scale(0.95); }
 .btn-action:hover { box-shadow: var(--shadow-lg); }
 
+.btn-action svg {
+    display: inline-block;
+    width: 1.1em;
+    height: 1.1em;
+    vertical-align: -0.15em;
+    margin-right: 0.25em;
+}
+
 .btn-danger {
     border-color: var(--danger);
     color: var(--danger);
@@ -328,6 +355,74 @@ body {
 /* === Variant Dialog === */
 .variant-dialog {
     max-width: 440px;
+}
+
+/* === Help Dialog === */
+.help-dialog {
+    max-width: 420px;
+    text-align: left;
+}
+
+.help-content {
+    margin: 12px 0;
+}
+
+.help-section {
+    margin-bottom: 14px;
+}
+
+.help-section h3 {
+    font-size: 0.95rem;
+    color: var(--accent);
+    margin-bottom: 6px;
+    font-weight: 700;
+}
+
+.help-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.help-section ul li {
+    position: relative;
+    padding: 3px 0 3px 16px;
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.6;
+}
+
+.help-section ul li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.help-section p {
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.6;
+}
+
+.help-footer {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.help-footer a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.help-footer a:hover {
+    text-decoration: underline;
 }
 
 .variant-list {
@@ -449,7 +544,8 @@ body {
     #app { padding: 6px 8px 18px; gap: 8px; }
     .title { font-size: 1.2rem; }
     .btn-action { padding: 8px 12px; font-size: 0.8rem; }
-    .btn-icon { width: 34px; height: 34px; font-size: 1rem; }
+    .btn-icon { width: 34px; height: 34px; }
+    .btn-icon svg { width: 17px; height: 17px; }
     .controls { gap: 5px; }
     .piece-list { gap: 5px; }
 }
