@@ -38,8 +38,8 @@ npx serve .
 
 ### Rendering: Dual approach
 
-- **Tray** (`#board-canvas`): Canvas 2D API with `devicePixelRatio` scaling. The tray recess (L-shaped playing area) and placed pieces are rendered on the same canvas. Piece shapes are built via `createRoundedGridPath()` which constructs per-cell paths with convex-only `arcTo` rounding; concave corners are filled afterward via `drawConcaveFill()` which draws a small arc sector at each concave grid intersection. Pieces use `drawPieceAt()` which clips to the compound path, fills with a bevel gradient, then applies concave corner fills. No per-cell strokes, no drop shadows, no piece numbers.
-- **Piece bank** (`#piece-bank`): Individual `<canvas>` elements inside `<div>` containers in the DOM, one per unplaced piece. Rendered with the same `createRoundedGridPath()` + `drawConcaveFill()` technique. Bank piece cell size (`bankCellSize()`) scales proportionally to tray cell size (`cs * 0.45`, clamped to [13, 24]).
+- **Tray** (`#board-canvas`): Canvas 2D API with `devicePixelRatio` scaling. The tray recess (L-shaped playing area) and placed pieces are rendered on the same canvas. Tray recess is built via `createRoundedGridPath()` which constructs per-cell paths with convex-only `arcTo` rounding; concave corners are filled afterward via `drawConcaveFill()`. Pieces use `drawPieceAt()` which clips to the outer perimeter path (`createOuterBoundaryPath`), fills with a 3-stop bevel gradient (lighter → base → darker, computed per-piece via `lighter()`/`darker()` helpers), then applies an inner stroke with its own bevel gradient along the perimeter. No drop shadows, no piece numbers.
+- **Piece bank** (`#piece-bank`): Individual `<canvas>` elements inside `<div>` containers in the DOM, one per unplaced piece. Rendered with the same `createOuterBoundaryPath()` clip + 3-stop gradient + inner stroke technique as tray pieces. Bank piece cell size (`bankCellSize()`) scales proportionally to tray cell size (`cs * 0.45`, clamped to [13, 24]).
 
 ### Responsive layout
 
@@ -54,7 +54,7 @@ npx serve .
 - **Click = rotate** (280ms timer), **double-click = flip** (350ms window). Uses `gameState.clickPieceId` in the timer callback to avoid closure scope bugs.
 - **No click-to-pickup**: clicking a placed piece does nothing — dragging is the only way to remove a piece.
 - **No drop indicator**: the tray does not show green/red placement previews. The floating clone following the cursor is the sole drag visual.
-- **No piece shadows or numbers**: pieces render as clean colored shapes with bevel gradients only — no drop shadows, no ID numbers.
+- **No piece shadows or numbers**: pieces render as clean colored shapes with 3-stop bevel gradients and an inner perimeter stroke — no drop shadows, no ID numbers.
 
 ### Calendar history
 
@@ -102,16 +102,23 @@ CSS custom properties on `:root` define light theme; `@media (prefers-color-sche
 
 ## Key rendering constraints
 
-Do not use `roundRect` or per-cell strokes. All shapes are built via `createRoundedGridPath(grid, ox, oy, cs)` which constructs a compound `Path2D`:
-- Each filled cell contributes a sub-path with `moveTo`/`lineTo`/`arcTo` (not `rect`).
-- Only **convex** corners are rounded (exactly 1 of 4 cells filled at a grid intersection). This is the `convex()` check inside `createRoundedGridPath()`.
-- **Concave** corners (3 of 4 filled) are handled separately: after the main shape fill, `drawConcaveFill()` draws a small arc sector at each concave corner. It builds a path from the corner point → along one boundary edge to a tangent point → `arc()` centered at the outer corner of the fill rect → along the other boundary edge back to the corner, then fills with the matching color/gradient. Convex corners get `arcTo` in the per-cell sub-paths; concave corners get `arc()` in the post-fill pass.
-- Sub-paths are combined via `path.addPath(cp)` — the union of all cell sub-paths forms the final shape.
-- Then `ctx.clip(path)` + single fill/gradient — see `drawPieceAt()` in `js/app.js`.
+Do not use `roundRect` or per-cell strokes. Two path-building approaches are used:
+
+### Per-cell path (`createRoundedGridPath`)
+Used only for the **tray recess**. Each filled cell contributes a sub-path with `moveTo`/`lineTo`/`arcTo` (not `rect`). Only **convex** corners are rounded (exactly 1 of 4 cells filled at a grid intersection). **Concave** corners (3 of 4 filled) are handled separately via `drawConcaveFill()` after the main fill. Sub-paths are combined via `path.addPath(cp)`.
+
+### Outer perimeter path (`createOuterBoundaryPath`)
+Used for **piece rendering** (tray pieces, bank, drag clone). Traces only the outer boundary of a polyomino shape via edge-cancellation + perimeter walk. Both **convex** and **concave** corners are rounded with `arcTo` — no separate concave fill step needed. The resulting `Path2D` serves as the clip region for fill + gradient + inner stroke.
+
+### Piece fill gradient
+Pieces use a 3-stop bevel gradient (lighter → base color → darker) matching the tray's approach. Stops are computed per-piece via `lighter(hex, amt)` and `darker(hex, amt)` which blend the base color toward white or black.
+
+### Inner stroke
+Pieces have an inner stroke along the outer perimeter (inside the clip, double line-width so only the inner half shows). The stroke uses its own bevel gradient: lighter at top-left, near-transparent at center, darker at bottom-right.
 
 The corner radius scales with cell size: `max(2, min(round(cs * 0.1), 8))`. No drop shadows, no piece ID numbers.
 
-### Concave corner helper functions
+### Concave corner helpers
 
 - `findConcaveCorners(grid, ox, oy, cs)` — returns `[{cx, cy, emptyQ}]` for each grid intersection where exactly 3 of 4 cells are filled. `emptyQ` is `'nw'|'ne'|'sw'|'se'` indicating the empty quadrant.
-- `drawConcaveFill(ctx, cx, cy, rad, emptyQ, color, grad)` — draws the arc sector at one concave corner. Used in `drawPieceAt()`, `renderPieceBank()`, `createDragClone()`, and tray recess rendering.
+- `drawConcaveFill(ctx, cx, cy, rad, emptyQ, color, grad)` — draws the arc sector at one concave corner. Used in tray recess rendering only (pieces use `createOuterBoundaryPath` which rounds concave corners natively).

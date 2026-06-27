@@ -32,6 +32,26 @@ const PIECE_COLORS_DARK = [
     '#40D0B8', '#F09050', '#F05080', '#30D8F0', '#A0D860', '#E090B0', '#90C8EA', '#D4B86A', '#80D080'
 ];
 
+// Lighten / darken a hex color, for piece bevel gradients (same approach as tray)
+function lighter(hex, amt) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const lr = Math.round(r + (255 - r) * amt);
+    const lg = Math.round(g + (255 - g) * amt);
+    const lb = Math.round(b + (255 - b) * amt);
+    return `rgb(${lr},${lg},${lb})`;
+}
+function darker(hex, amt) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const dr = Math.round(r * (1 - amt));
+    const dg = Math.round(g * (1 - amt));
+    const db = Math.round(b * (1 - amt));
+    return `rgb(${dr},${dg},${db})`;
+}
+
 // ============================================================
 // DATA: Puzzle Variants & Tray Layouts
 // ============================================================
@@ -821,6 +841,151 @@ function createPiecePath(shape, ox, oy, cs) {
     return createRoundedGridPath(shape, ox, oy, cs);
 }
 
+// Build a path tracing only the outer perimeter of a polyomino shape.
+// Used for inner stroke so internal cell boundaries are not drawn.
+function createOuterBoundaryPath(grid, ox, oy, cs) {
+    const rad = Math.max(2, Math.min(Math.round(cs * 0.1), 8));
+    const rows = grid.length;
+    const cols = grid[0]?.length || 0;
+
+    const filled = (r, c) => r >= 0 && r < rows && c >= 0 && c < cols && grid[r][c] === 1;
+
+    // Step 1: Collect undirected outer edges via cancellation.
+    // Internal edges (shared by two adjacent filled cells) appear twice and cancel.
+    const edgeSet = new Set();
+
+    function toggle(x1, y1, x2, y2) {
+        let key;
+        if (x1 < x2 || (x1 === x2 && y1 <= y2)) {
+            key = `${x1},${y1}-${x2},${y2}`;
+        } else {
+            key = `${x2},${y2}-${x1},${y1}`;
+        }
+        if (edgeSet.has(key)) edgeSet.delete(key);
+        else edgeSet.add(key);
+    }
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            if (grid[r][c] !== 1) continue;
+            const x = ox + c * cs;
+            const y = oy + r * cs;
+            toggle(x, y, x + cs, y);           // top
+            toggle(x + cs, y, x + cs, y + cs); // right
+            toggle(x, y + cs, x + cs, y + cs); // bottom
+            toggle(x, y, x, y + cs);           // left
+        }
+    }
+
+    if (edgeSet.size === 0) return new Path2D();
+
+    // Step 2: Build adjacency map (point -> list of neighbor points)
+    const adj = new Map();
+    const addNeighbor = (x1, y1, x2, y2) => {
+        const k1 = `${x1},${y1}`;
+        const k2 = `${x2},${y2}`;
+        if (!adj.has(k1)) adj.set(k1, []);
+        if (!adj.has(k2)) adj.set(k2, []);
+        adj.get(k1).push({x: x2, y: y2});
+        adj.get(k2).push({x: x1, y: y1});
+    };
+
+    for (const key of edgeSet) {
+        const [p1, p2] = key.split('-');
+        const [x1, y1] = p1.split(',').map(Number);
+        const [x2, y2] = p2.split(',').map(Number);
+        addNeighbor(x1, y1, x2, y2);
+    }
+
+    // Step 3: Walk the perimeter to produce an ordered point list.
+    // Start from the top-leftmost vertex.
+    let startKey = null;
+    let minY = Infinity, minX = Infinity;
+    for (const k of adj.keys()) {
+        const [px, py] = k.split(',').map(Number);
+        if (py < minY || (py === minY && px < minX)) {
+            minY = py; minX = px; startKey = k;
+        }
+    }
+
+    const pts = [];
+    let cur = startKey;
+    let prev = null;
+
+    do {
+        const [px, py] = cur.split(',').map(Number);
+        pts.push({x: px, y: py});
+
+        const neighbors = adj.get(cur) || [];
+        let next = null;
+        for (const n of neighbors) {
+            const nk = `${n.x},${n.y}`;
+            if (nk !== prev) { next = nk; break; }
+        }
+        prev = cur;
+        cur = next;
+    } while (cur && cur !== startKey);
+
+    if (pts.length < 3) return new Path2D();
+
+    // Step 4: Build Path2D with corner rounding at convex and concave vertices.
+    const path = new Path2D();
+    const n = pts.length;
+
+    // Determine corner type at a grid intersection (pixel coords -> grid coords)
+    function cornerType(px, py) {
+        const gc = Math.round((px - ox) / cs);
+        const gr = Math.round((py - oy) / cs);
+        let total = 0;
+        if (filled(gr - 1, gc - 1)) total++;
+        if (filled(gr - 1, gc))     total++;
+        if (filled(gr, gc - 1))     total++;
+        if (filled(gr, gc))         total++;
+        return total === 1 ? 'convex' : total === 3 ? 'concave' : 'flat';
+    }
+
+    // Start: adjust if first vertex needs corner rounding
+    const firstType = cornerType(pts[0].x, pts[0].y);
+    if (firstType === 'convex' || firstType === 'concave') {
+        const dx = pts[1].x - pts[0].x;
+        const dy = pts[1].y - pts[0].y;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        const t = Math.min(rad / len, 1);
+        path.moveTo(pts[0].x + dx * t, pts[0].y + dy * t);
+    } else {
+        path.moveTo(pts[0].x, pts[0].y);
+    }
+
+    for (let i = 0; i < n; i++) {
+        const curr = pts[i];
+        const next = pts[(i + 1) % n];
+        const nextNext = pts[(i + 2) % n];
+
+        const ct = cornerType(next.x, next.y);
+
+        if (ct === 'convex' || ct === 'concave') {
+            // Approach tangent on curr->next edge
+            const dx1 = next.x - curr.x;
+            const dy1 = next.y - curr.y;
+            const len1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+            const t1 = Math.min(rad / len1, 1);
+            path.lineTo(next.x - dx1 * t1, next.y - dy1 * t1);
+
+            // Arc around the corner to exit tangent (arcTo handles convex & concave alike)
+            const dx2 = nextNext.x - next.x;
+            const dy2 = nextNext.y - next.y;
+            const len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+            const t2 = Math.min(rad / len2, 1);
+            path.arcTo(next.x, next.y, next.x + dx2 * t2, next.y + dy2 * t2, rad);
+        } else {
+            path.lineTo(next.x, next.y);
+        }
+    }
+
+    path.closePath();
+    return path;
+}
+
 // Find concave corners: grid intersections where exactly 3 of 4 cells are filled.
 // Returns [{cx, cy, emptyQ}] in canvas coords; emptyQ is 'nw'|'ne'|'sw'|'se'.
 function findConcaveCorners(grid, ox, oy, cs) {
@@ -881,34 +1046,32 @@ function drawConcaveFill(ctx, cx, cy, rad, q, color, grad) {
 
 // Draw a piece at pixel position (no grid snap) — used for drag clone
 function drawPieceAt(shape, ox, oy, cs, color) {
-    const path = createPiecePath(shape, ox, oy, cs);
+    const outlinePath = createOuterBoundaryPath(shape, ox, oy, cs);
     const b = getPiecePixelBounds({ baseShape: shape, rotation: 0, reflected: false }, ox, oy, cs);
 
-    // Clip to piece shape for base fill + gradient
+    // Clip to piece outer perimeter for fill + stroke
     ctx.save();
-    ctx.clip(path);
+    ctx.clip(outlinePath);
 
-    // Base color fill
-    ctx.fillStyle = color;
-    ctx.fillRect(b.x - 20, b.y - 20, b.w + 40, b.h + 40);
-
-    // Bevel gradient across the piece (no per-cell visibility)
+    // 3-stop bevel gradient (same approach as tray): lighter -> base -> darker
     const grad = ctx.createLinearGradient(b.x, b.y, b.x + b.w, b.y + b.h);
-    grad.addColorStop(0, 'rgba(255,255,255,0.3)');
-    grad.addColorStop(0.45, 'rgba(255,255,255,0)');
-    grad.addColorStop(0.55, 'rgba(0,0,0,0)');
-    grad.addColorStop(1, 'rgba(0,0,0,0.15)');
+    grad.addColorStop(0, lighter(color, 0.45));
+    grad.addColorStop(0.5, color);
+    grad.addColorStop(1, darker(color, 0.25));
     ctx.fillStyle = grad;
     ctx.fillRect(b.x - 20, b.y - 20, b.w + 40, b.h + 40);
 
-    ctx.restore();
+    // Inner stroke for 3D definition (outer perimeter only, bevel gradient)
+    const strokeW = Math.max(0.4, Math.min(Math.round(cs * 0.035), 1.5));
+    ctx.lineWidth = strokeW * 2;
+    const strokeGrad = ctx.createLinearGradient(b.x, b.y, b.x + b.w, b.y + b.h);
+    strokeGrad.addColorStop(0, 'rgba(220,220,220,0.18)');
+    strokeGrad.addColorStop(0.5, 'rgba(0,0,0,0.05)');
+    strokeGrad.addColorStop(1, 'rgba(0,0,0,0.3)');
+    ctx.strokeStyle = strokeGrad;
+    ctx.stroke(outlinePath);
 
-    // Round concave corners: draw a path from corner → tangent → arc → corner
-    const rad = Math.max(2, Math.min(Math.round(cs * 0.1), 8));
-    const concave = findConcaveCorners(shape, ox, oy, cs);
-    for (const c of concave) {
-        drawConcaveFill(ctx, c.cx, c.cy, rad, c.emptyQ, color, grad);
-    }
+    ctx.restore();
 }
 
 // ============================================================
@@ -1091,27 +1254,32 @@ function renderPieceBank() {
 
         const color = getPieceColor(piece.id);
 
-        // Main shape path (convex corners rounded)
-        const mp = createRoundedGridPath(shape, 0, 0, bcs);
+        // Outer perimeter path for clip + fill + stroke
+        const outlinePath = createOuterBoundaryPath(shape, 0, 0, bcs);
 
         pctx.save();
-        pctx.clip(mp);
-        pctx.fillStyle = color;
+        pctx.clip(outlinePath);
+
+        // 3-stop bevel gradient (same approach as tray): lighter -> base -> darker
         const bx = 0, by = 0, bw = cols * bcs, bh = rows * bcs;
-        pctx.fillRect(bx - 10, by - 10, bw + 20, bh + 20);
         const grad = pctx.createLinearGradient(bx, by, bx + bw, by + bh);
-        grad.addColorStop(0, 'rgba(255,255,255,0.25)');
-        grad.addColorStop(1, 'rgba(0,0,0,0.12)');
+        grad.addColorStop(0, lighter(color, 0.4));
+        grad.addColorStop(0.5, color);
+        grad.addColorStop(1, darker(color, 0.2));
         pctx.fillStyle = grad;
         pctx.fillRect(bx - 10, by - 10, bw + 20, bh + 20);
-        pctx.restore();
 
-        // Round concave corners
-        const bRad = Math.max(2, Math.min(Math.round(bcs * 0.1), 8));
-        const bConcave = findConcaveCorners(shape, 0, 0, bcs);
-        for (const c of bConcave) {
-            drawConcaveFill(pctx, c.cx, c.cy, bRad, c.emptyQ, color, grad);
-        }
+        // Inner stroke for 3D definition (outer perimeter only, bevel gradient)
+        const bStrokeW = Math.max(0.8, Math.min(Math.round(bcs * 0.05), 3));
+        pctx.lineWidth = bStrokeW * 2;
+        const bStrokeGrad = pctx.createLinearGradient(bx, by, bx + bw, by + bh);
+        bStrokeGrad.addColorStop(0, 'rgba(220,220,220,0.18)');
+        bStrokeGrad.addColorStop(0.5, 'rgba(0,0,0,0.05)');
+        bStrokeGrad.addColorStop(1, 'rgba(0,0,0,0.3)');
+        pctx.strokeStyle = bStrokeGrad;
+        pctx.stroke(outlinePath);
+
+        pctx.restore();
 
         container.appendChild(pc);
 
@@ -1289,28 +1457,31 @@ function createDragClone() {
 
     const color = getPieceColor(piece.id);
 
-    // Main body (convex corners rounded)
-    const mp = createRoundedGridPath(shape, 0, 0, cs);
+    // Outer perimeter path for clip + fill + stroke
+    const outlinePath = createOuterBoundaryPath(shape, 0, 0, cs);
 
     dctx.save();
-    dctx.clip(mp);
-    dctx.fillStyle = color;
-    dctx.fillRect(-10, -10, cols*cs + 20, rows*cs + 20);
+    dctx.clip(outlinePath);
+
+    // 3-stop bevel gradient (same approach as tray): lighter -> base -> darker
     const grad = dctx.createLinearGradient(0, 0, cols*cs, rows*cs);
-    grad.addColorStop(0, 'rgba(255,255,255,0.3)');
-    grad.addColorStop(0.45, 'rgba(255,255,255,0)');
-    grad.addColorStop(0.55, 'rgba(0,0,0,0)');
-    grad.addColorStop(1, 'rgba(0,0,0,0.15)');
+    grad.addColorStop(0, lighter(color, 0.45));
+    grad.addColorStop(0.5, color);
+    grad.addColorStop(1, darker(color, 0.25));
     dctx.fillStyle = grad;
     dctx.fillRect(-10, -10, cols*cs + 20, rows*cs + 20);
-    dctx.restore();
 
-    // Round concave corners
-    const dRad = Math.max(2, Math.min(Math.round(cs * 0.1), 8));
-    const dConcave = findConcaveCorners(shape, 0, 0, cs);
-    for (const c of dConcave) {
-        drawConcaveFill(dctx, c.cx, c.cy, dRad, c.emptyQ, color, grad);
-    }
+    // Inner stroke for 3D definition (outer perimeter only, bevel gradient)
+    const dStrokeW = Math.max(0.8, Math.min(Math.round(cs * 0.05), 3));
+    dctx.lineWidth = dStrokeW * 2;
+    const dStrokeGrad = dctx.createLinearGradient(0, 0, cols * cs, rows * cs);
+    dStrokeGrad.addColorStop(0, 'rgba(220,220,220,0.18)');
+    dStrokeGrad.addColorStop(0.5, 'rgba(0,0,0,0.05)');
+    dStrokeGrad.addColorStop(1, 'rgba(0,0,0,0.3)');
+    dctx.strokeStyle = dStrokeGrad;
+    dctx.stroke(outlinePath);
+
+    dctx.restore();
 
     document.body.appendChild(dragClone);
     updateDragClonePosition(gameState.dragClientX, gameState.dragClientY);
