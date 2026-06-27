@@ -171,7 +171,7 @@ const TRANSLATIONS = {
         history:'拼图历史', select_lang:'选择语言',
         no_history:'还没有完成记录，快来挑战今天的拼图吧！',
         exposed:'露出', confirm_reset:'确定要重置吗？所有进度将丢失。',
-        drag_hint:'拖入托盘 | 单击旋转 | 双击翻转',
+        drag_hint:'拖入托盘 | 单击翻转 | 双击旋转',
         tray_empty:'所有方块已放入托盘 ✓',
         return_to_today:'返回今天',
         cal_weekdays:['日','一','二','三','四','五','六'],
@@ -193,8 +193,8 @@ const TRANSLATIONS = {
         help_title:'游戏帮助',
         help_controls_title:'操作方式',
         help_ctrl_drag:'拖拽方块到托盘',
-        help_ctrl_rotate:'单击方块旋转',
-        help_ctrl_flip:'双击方块翻转',
+        help_ctrl_rotate:'双击方块旋转',
+        help_ctrl_flip:'单击方块翻转',
         help_ctrl_return:'从托盘拖回方块到待选区',
         help_goal_title:'胜利条件',
         help_goal:'用所有方块填满托盘，仅露出今日的月份、日期（和对应变体的星期）。',
@@ -207,7 +207,7 @@ const TRANSLATIONS = {
         history:'Puzzle History', select_lang:'Select Language',
         no_history:'No records yet. Solve today\'s puzzle!',
         exposed:'Exposed', confirm_reset:'Are you sure? All progress will be lost.',
-        drag_hint:'Drag to board | Click to rotate | Double-click to flip',
+        drag_hint:'Drag to board | Click to flip | Double-click to rotate',
         tray_empty:'All pieces placed ✓',
         return_to_today:'Return to Today',
         cal_weekdays:['Su','Mo','Tu','We','Th','Fr','Sa'],
@@ -229,8 +229,8 @@ const TRANSLATIONS = {
         help_title:'How to Play',
         help_controls_title:'Controls',
         help_ctrl_drag:'Drag a piece onto the tray',
-        help_ctrl_rotate:'Click a piece to rotate',
-        help_ctrl_flip:'Double-click a piece to flip',
+        help_ctrl_rotate:'Double-click a piece to rotate',
+        help_ctrl_flip:'Click a piece to flip',
         help_ctrl_return:'Drag a piece from the tray back to the bank',
         help_goal_title:'Goal',
         help_goal:'Fill the tray with all pieces so that only today\'s month, day (and weekday for applicable variants) remain visible.',
@@ -243,7 +243,7 @@ const TRANSLATIONS = {
         history:'パズル履歴', select_lang:'言語選択',
         no_history:'まだ記録がありません。今日のパズルに挑戦しましょう！',
         exposed:'露出', confirm_reset:'リセットしますか？すべての進行状況が失われます。',
-        drag_hint:'ドラッグで配置 | クリックで回転 | ダブルクリックで反転',
+        drag_hint:'ドラッグで配置 | クリックで反転 | ダブルクリックで回転',
         tray_empty:'すべてのピースが配置されました ✓',
         return_to_today:'今日に戻る',
         cal_weekdays:['日','月','火','水','木','金','土'],
@@ -265,8 +265,8 @@ const TRANSLATIONS = {
         help_title:'遊び方',
         help_controls_title:'操作方法',
         help_ctrl_drag:'ピースをトレイにドラッグ',
-        help_ctrl_rotate:'クリックで回転',
-        help_ctrl_flip:'ダブルクリックで反転',
+        help_ctrl_rotate:'ダブルクリックで回転',
+        help_ctrl_flip:'クリックで反転',
         help_ctrl_return:'トレイからピースをバンクに戻す',
         help_goal_title:'勝利条件',
         help_goal:'すべてのピースを配置し、今日の月・日（および対応バリアントでは曜日）だけが見える状態にします。',
@@ -279,7 +279,7 @@ const TRANSLATIONS = {
         history:'퍼즐 기록', select_lang:'언어 선택',
         no_history:'아직 기록이 없습니다. 오늘의 퍼즐에 도전하세요!',
         exposed:'노출', confirm_reset:'초기화하시겠습니까? 모든 진행 상황이 손실됩니다.',
-        drag_hint:'드래그하여 배치 | 클릭 회전 | 더블클릭 뒤집기',
+        drag_hint:'드래그하여 배치 | 클릭 뒤집기 | 더블클릭 회전',
         tray_empty:'모든 조각이 배치되었습니다 ✓',
         return_to_today:'오늘로 돌아가기',
         cal_weekdays:['일','월','화','수','목','금','토'],
@@ -301,8 +301,8 @@ const TRANSLATIONS = {
         help_title:'게임 도움말',
         help_controls_title:'조작 방법',
         help_ctrl_drag:'조각을 트레이에 드래그',
-        help_ctrl_rotate:'클릭하여 회전',
-        help_ctrl_flip:'더블클릭하여 뒤집기',
+        help_ctrl_rotate:'더블클릭하여 회전',
+        help_ctrl_flip:'클릭하여 뒤집기',
         help_ctrl_return:'트레이에서 조각을 다시 뱅크로 드래그',
         help_goal_title:'승리 조건',
         help_goal:'모든 조각을 배치하여 오늘의 월, 일(및 해당 변형의 경우 요일)만 보이도록 합니다.',
@@ -315,7 +315,7 @@ const TRANSLATIONS = {
         history:'История', select_lang:'Выбор языка',
         no_history:'Нет записей. Решите сегодняшнюю головоломку!',
         exposed:'Открыто', confirm_reset:'Вы уверены? Весь прогресс будет потерян.',
-        drag_hint:'Перетащите на доску | Нажмите для поворота | Двойной клик для отражения',
+        drag_hint:'Перетащите на доску | Нажмите для отражения | Двойной клик для поворота',
         tray_empty:'Все фигуры размещены ✓',
         return_to_today:'Вернуться к сегодня',
         cal_weekdays:['Вс','Пн','Вт','Ср','Чт','Пт','Сб'],
@@ -337,8 +337,8 @@ const TRANSLATIONS = {
         help_title:'Как играть',
         help_controls_title:'Управление',
         help_ctrl_drag:'Перетащите фигуру на поддон',
-        help_ctrl_rotate:'Нажмите для поворота',
-        help_ctrl_flip:'Двойной клик для отражения',
+        help_ctrl_rotate:'Двойной клик для поворота',
+        help_ctrl_flip:'Нажмите для отражения',
         help_ctrl_return:'Перетащите фигуру с поддона обратно',
         help_goal_title:'Цель',
         help_goal:'Заполните поддон так, чтобы видны были только сегодняшние месяц, число (и день недели для соответствующих вариантов).',
@@ -351,7 +351,7 @@ const TRANSLATIONS = {
         history:'Historique', select_lang:'Choisir la langue',
         no_history:'Pas encore d\'enregistrement. Résolvez le puzzle du jour !',
         exposed:'Exposé', confirm_reset:'Êtes-vous sûr ? Tout progrès sera perdu.',
-        drag_hint:'Glissez sur le plateau | Clic pour pivoter | Double-clic pour retourner',
+        drag_hint:'Glissez sur le plateau | Clic pour retourner | Double-clic pour pivoter',
         tray_empty:'Toutes les pièces placées ✓',
         return_to_today:'Revenir à aujourd\'hui',
         cal_weekdays:['Di','Lu','Ma','Me','Je','Ve','Sa'],
@@ -373,8 +373,8 @@ const TRANSLATIONS = {
         help_title:'Comment jouer',
         help_controls_title:'Contrôles',
         help_ctrl_drag:'Glissez une pièce sur le plateau',
-        help_ctrl_rotate:'Cliquez sur une pièce pour pivoter',
-        help_ctrl_flip:'Double-cliquez pour retourner',
+        help_ctrl_rotate:'Double-cliquez pour pivoter',
+        help_ctrl_flip:'Cliquez sur une pièce pour retourner',
         help_ctrl_return:'Retirez une pièce du plateau vers la réserve',
         help_goal_title:'Objectif',
         help_goal:'Remplissez le plateau avec toutes les pièces de sorte que seuls le mois, le jour (et le jour de la semaine pour les variantes applicables) d\'aujourd\'hui restent visibles.',
@@ -387,7 +387,7 @@ const TRANSLATIONS = {
         history:'Verlauf', select_lang:'Sprache wählen',
         no_history:'Noch keine Einträge. Löse das heutige Puzzle!',
         exposed:'Sichtbar', confirm_reset:'Bist du sicher? Alle Fortschritte gehen verloren.',
-        drag_hint:'Ziehen zum Platzieren | Klick zum Drehen | Doppelklick zum Spiegeln',
+        drag_hint:'Ziehen zum Platzieren | Klick zum Spiegeln | Doppelklick zum Drehen',
         tray_empty:'Alle Teile platziert ✓',
         return_to_today:'Zurück zu heute',
         cal_weekdays:['So','Mo','Di','Mi','Do','Fr','Sa'],
@@ -409,8 +409,8 @@ const TRANSLATIONS = {
         help_title:'Spielanleitung',
         help_controls_title:'Steuerung',
         help_ctrl_drag:'Ziehe ein Teil auf das Tablett',
-        help_ctrl_rotate:'Klicke zum Drehen',
-        help_ctrl_flip:'Doppelklicke zum Spiegeln',
+        help_ctrl_rotate:'Doppelklicke zum Drehen',
+        help_ctrl_flip:'Klicke zum Spiegeln',
         help_ctrl_return:'Ziehe ein Teil vom Tablett zurück',
         help_goal_title:'Ziel',
         help_goal:'Fülle das Tablett so, dass nur der heutige Monat, Tag (und Wochentag für entsprechende Varianten) sichtbar bleiben.',
@@ -423,7 +423,7 @@ const TRANSLATIONS = {
         history:'Cronologia', select_lang:'Seleziona lingua',
         no_history:'Nessun record. Risolvi il puzzle di oggi!',
         exposed:'Esposto', confirm_reset:'Sei sicuro? Tutti i progressi andranno persi.',
-        drag_hint:'Trascina sul vassoio | Clic per ruotare | Doppio clic per capovolgere',
+        drag_hint:'Trascina sul vassoio | Clic per capovolgere | Doppio clic per ruotare',
         tray_empty:'Tutti i pezzi posizionati ✓',
         return_to_today:'Torna ad oggi',
         cal_weekdays:['Do','Lu','Ma','Me','Gi','Ve','Sa'],
@@ -445,8 +445,8 @@ const TRANSLATIONS = {
         help_title:'Come giocare',
         help_controls_title:'Controlli',
         help_ctrl_drag:'Trascina un pezzo sul vassoio',
-        help_ctrl_rotate:'Clicca un pezzo per ruotare',
-        help_ctrl_flip:'Doppio clic per capovolgere',
+        help_ctrl_rotate:'Doppio clic per ruotare',
+        help_ctrl_flip:'Clicca un pezzo per capovolgere',
         help_ctrl_return:'Trascina un pezzo dal vassoio alla riserva',
         help_goal_title:'Obiettivo',
         help_goal:'Riempi il vassoio con tutti i pezzi in modo che solo il mese, il giorno (e il giorno della settimana per le varianti applicabili) di oggi rimangano visibili.',
@@ -459,7 +459,7 @@ const TRANSLATIONS = {
         history:'Előzmények', select_lang:'Nyelv kiválasztása',
         no_history:'Még nincs bejegyzés. Oldd meg a mai feladványt!',
         exposed:'Látható', confirm_reset:'Biztos vagy benne? Minden haladás elveszik.',
-        drag_hint:'Húzd a táblára | Kattints a forgatáshoz | Dupla kattintás a tükrözéshez',
+        drag_hint:'Húzd a táblára | Kattints a tükrözéshez | Dupla kattintás a forgatáshoz',
         tray_empty:'Minden elem elhelyezve ✓',
         return_to_today:'Vissza a maihoz',
         cal_weekdays:['V','H','K','Sze','Cs','P','Szo'],
@@ -481,8 +481,8 @@ const TRANSLATIONS = {
         help_title:'Játék útmutató',
         help_controls_title:'Kezelés',
         help_ctrl_drag:'Húzz egy elemet a tálcára',
-        help_ctrl_rotate:'Kattints egy elemre a forgatáshoz',
-        help_ctrl_flip:'Dupla kattintás a tükrözéshez',
+        help_ctrl_rotate:'Dupla kattintás a forgatáshoz',
+        help_ctrl_flip:'Kattints egy elemre a tükrözéshez',
         help_ctrl_return:'Húzz egy elemet a tálcáról vissza a készletbe',
         help_goal_title:'Cél',
         help_goal:'Töltsd meg a tálcát az összes elemmel úgy, hogy csak a mai hónap, nap (és a megfelelő változatoknál a hét napja) maradjon látható.',
@@ -685,6 +685,25 @@ function canPlace(piece, row, col, ignorePieceId) {
     return true;
 }
 
+// Check whether a piece would overlap blocked cells or other pieces
+// if transformed with the given rotation, reflection, and position.
+function wouldOverlap(piece, newRotation, newReflected, newRow, newCol) {
+    // Build a temporary piece-like object with the hypothetical transform
+    const temp = { baseShape: piece.baseShape, rotation: newRotation, reflected: newReflected };
+    const cells = getPieceCells(temp, newRow, newCol);
+    for (const cell of cells) {
+        if (cell.row < 0 || cell.row >= TRAY_ROWS || cell.col < 0 || cell.col >= TRAY_COLS) return true;
+        if (isBlocked(cell.row, cell.col)) return true;
+        for (const other of gameState.pieces) {
+            if (other.id === piece.id) continue;
+            if (other.row < 0) continue;
+            const oc = getPieceCells(other, other.row, other.col);
+            if (oc.some(o => o.row === cell.row && o.col === cell.col)) return true;
+        }
+    }
+    return false;
+}
+
 function placePieceOnBoard(pieceId, row, col) {
     const piece = gameState.pieces.find(p => p.id === pieceId);
     if (!piece || !canPlace(piece, row, col)) return false;
@@ -722,7 +741,43 @@ function rotatePiece(pieceId) {
 function flipPiece(pieceId) {
     const piece = gameState.pieces.find(p => p.id === pieceId);
     if (!piece) return;
+    // If on tray, check that flipped piece won't overlap blocked cells or other pieces
+    if (piece.row >= 0) {
+        if (wouldOverlap(piece, piece.rotation, !piece.reflected, piece.row, piece.col)) return;
+    }
     piece.reflected = !piece.reflected;
+    saveGame();
+    renderTray();
+    renderPieceBank();
+}
+
+// Rotate a piece 90° CW, pivoting around a specific tray cell.
+// pivotRow/pivotCol: the tray cell the user clicked on (must be part of the piece).
+// For pieces in the bank, use standard rotatePiece() instead.
+function rotatePieceAt(pieceId, pivotRow, pivotCol) {
+    const piece = gameState.pieces.find(p => p.id === pieceId);
+    if (!piece || piece.row < 0) return;
+
+    const shape = getTransformedShape(piece);
+    const localR = pivotRow - piece.row;
+    const localC = pivotCol - piece.col;
+
+    // Guard: the clicked cell must actually belong to this piece
+    if (localR < 0 || localR >= shape.length || localC < 0 || localC >= shape[0].length) return;
+    if (shape[localR][localC] !== 1) return;
+
+    const newRotation = (piece.rotation + 1) % 4;
+    // After 90° CW rotation, the cell at (localR, localC) in the old shape
+    // moves to (localC, oldRows - 1 - localR) in the new shape.
+    // Keep that cell at the same tray position (pivotRow, pivotCol):
+    const newRow = pivotRow - localC;
+    const newCol = pivotCol - shape.length + 1 + localR;
+
+    if (wouldOverlap(piece, newRotation, piece.reflected, newRow, newCol)) return;
+
+    piece.rotation = newRotation;
+    piece.row = newRow;
+    piece.col = newCol;
     saveGame();
     renderTray();
     renderPieceBank();
@@ -1460,6 +1515,11 @@ function renderPieceBank() {
         });
         container.addEventListener('pointermove', (e) => {
             if (gameState.dragPieceId !== piece.id) return;
+            // Ignore moves while waiting for click-to-rotate timer.
+            // After pointerup, clickTimer is set for 280ms; moving the mouse
+            // during this window must not trigger a drag — there is no active
+            // pointer capture to deliver the pointerup that would clean up.
+            if (gameState.clickTimer) return;
             handleDragMove(e);
         });
         container.addEventListener('pointerup', (e) => {
@@ -1495,7 +1555,7 @@ function handleBankPointerDown(e, pieceId, container) {
     if (gameState.clickTimer && gameState.clickPieceId != null && gameState.clickPieceId !== pieceId) {
         clearTimeout(gameState.clickTimer);
         gameState.clickTimer = null;
-        rotatePiece(gameState.clickPieceId);
+        flipPiece(gameState.clickPieceId);
         gameState.clickPieceId = null;
         gameState.clickTime = 0;
     }
@@ -1509,7 +1569,7 @@ function handleBankPointerDown(e, pieceId, container) {
         gameState.clickPieceId = null;
         gameState.clickTime = 0;
         clearDragState();
-        flipPiece(pieceId);
+        rotatePiece(pieceId);
         return;
     }
 
@@ -1578,12 +1638,12 @@ function handleDragUp(e, pieceId) {
         // Was a drag — try to place on tray
         tryDropOnTray();
     } else {
-        // Was a click — schedule rotate (wait for possible double-click)
+        // Was a click — schedule flip (wait for possible double-click)
         gameState.clickPieceId = pieceId;
         gameState.clickTimer = setTimeout(() => {
             gameState.clickTimer = null;
             if (gameState.clickPieceId === pieceId && !gameState.dragMoved) {
-                rotatePiece(pieceId);
+                flipPiece(pieceId);
                 gameState.clickPieceId = null;
                 gameState.clickTime = 0;
             }
@@ -1702,9 +1762,8 @@ function findPieceAtCell(row, col) {
 }
 
 canvas.addEventListener('pointerdown', (e) => {
-    // If already dragging from bank, ignore canvas events
-    if (gameState.dragPieceId != null && !gameState.dragFromTray) return;
-    if (gameState.dragMoved) return;
+    // If actively dragging from bank (moved), ignore canvas events
+    if (gameState.dragMoved && gameState.dragPieceId != null && !gameState.dragFromTray) return;
 
     const rect = canvas.getBoundingClientRect();
     const px = e.clientX - rect.left;
@@ -1714,9 +1773,43 @@ canvas.addEventListener('pointerdown', (e) => {
     const row = Math.floor((py - TRAY_PADDING) / cs);
 
     const placed = findPieceAtCell(row, col);
-    if (!placed) return;
+    if (!placed) {
+        // Clicked empty area — resolve any pending click (bank or tray)
+        if (gameState.clickTimer && gameState.clickPieceId != null && !gameState.dragMoved) {
+            clearTimeout(gameState.clickTimer);
+            gameState.clickTimer = null;
+            flipPiece(gameState.clickPieceId);
+            gameState.clickPieceId = null;
+            gameState.clickTime = 0;
+            clearDragState();
+            renderTray();
+            renderPieceBank();
+        }
+        return;
+    }
 
     e.preventDefault();
+
+    const now = Date.now();
+
+    // If we have a pending click on a DIFFERENT piece (bank or tray), resolve it first
+    if (gameState.clickTimer && gameState.clickPieceId != null && gameState.clickPieceId !== placed.id) {
+        clearTimeout(gameState.clickTimer);
+        gameState.clickTimer = null;
+        flipPiece(gameState.clickPieceId);
+        gameState.clickPieceId = null;
+        gameState.clickTime = 0;
+    }
+
+    // Double-click detection (same piece within 350ms)
+    if (gameState.clickPieceId === placed.id && (now - gameState.clickTime) < 350 && !gameState.dragMoved) {
+        if (gameState.clickTimer) { clearTimeout(gameState.clickTimer); gameState.clickTimer = null; }
+        gameState.clickPieceId = null;
+        gameState.clickTime = 0;
+        clearDragState();
+        rotatePieceAt(placed.id, row, col);
+        return;
+    }
 
     // Start drag from tray
     gameState.dragPieceId = placed.id;
@@ -1726,6 +1819,8 @@ canvas.addEventListener('pointerdown', (e) => {
     gameState.dragMoved = false;
     gameState.dragClientX = e.clientX;
     gameState.dragClientY = e.clientY;
+    gameState.clickPieceId = placed.id;
+    gameState.clickTime = now;
 
     // Calculate grab offset: where within the piece the user clicked (canvas coords → piece-local coords)
     const canvasRect = canvas.getBoundingClientRect();
@@ -1741,6 +1836,8 @@ canvas.addEventListener('pointerdown', (e) => {
 
 canvas.addEventListener('pointermove', (e) => {
     if (!gameState.dragFromTray || gameState.dragPieceId == null) return;
+    // Ignore moves while waiting for click-to-flip timer (same guard as bank pieces)
+    if (gameState.clickTimer) return;
 
     const dx = e.clientX - gameState.dragStartX;
     const dy = e.clientY - gameState.dragStartY;
@@ -1766,18 +1863,33 @@ canvas.addEventListener('pointerup', (e) => {
     if (!gameState.dragFromTray) return;
     if (gameState.dragPieceId == null) return;
 
+    const pieceId = gameState.dragPieceId;
+
     if (gameState.dragMoved) {
         tryDropOnTray();
+        clearDragState();
+        renderTray();
+        renderPieceBank();
+    } else {
+        // Was a click — schedule flip (wait for possible double-click)
+        gameState.clickPieceId = pieceId;
+        gameState.clickTimer = setTimeout(() => {
+            gameState.clickTimer = null;
+            if (gameState.clickPieceId === pieceId && !gameState.dragMoved) {
+                flipPiece(pieceId);
+                gameState.clickPieceId = null;
+                gameState.clickTime = 0;
+            }
+            clearDragState();
+            renderTray();
+            renderPieceBank();
+        }, 280);
     }
-    // No movement = simple click on tray piece → do NOTHING (don't remove)
-
-    clearDragState();
-    renderTray();
-    renderPieceBank();
 });
 
 canvas.addEventListener('lostpointercapture', () => {
-    if (gameState.dragFromTray) {
+    // Only clear if no pending click timer (timer will clean up after it fires)
+    if (gameState.dragFromTray && gameState.clickTimer == null) {
         clearDragState();
         renderTray();
         renderPieceBank();
@@ -2066,7 +2178,7 @@ function init() {
 
     console.log('🧩 A Puzzle A Day v4 ready!');
     console.log(`   Variant: ${getVariant().id} | Today: ${getTodayTarget().targetMonth} ${getTodayTarget().targetDay} ${getTodayTarget().targetWeekday}`);
-    console.log('   Drag pieces into tray | Click = rotate | Double-click = flip');
+    console.log('   Drag pieces into tray | Click = flip | Double-click = rotate');
 }
 
 document.addEventListener('DOMContentLoaded', init);
