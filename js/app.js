@@ -880,9 +880,9 @@ function createOuterBoundaryPath(grid, ox, oy, cs) {
         return total === 1 ? 'convex' : total === 3 ? 'concave' : 'flat';
     }
 
-    // Start: adjust if first vertex is convex (needs corner rounding)
+    // Start: adjust if first vertex needs corner rounding
     const firstType = cornerType(pts[0].x, pts[0].y);
-    if (firstType === 'convex') {
+    if (firstType === 'convex' || firstType === 'concave') {
         const dx = pts[1].x - pts[0].x;
         const dy = pts[1].y - pts[0].y;
         const len = Math.sqrt(dx * dx + dy * dy);
@@ -899,7 +899,7 @@ function createOuterBoundaryPath(grid, ox, oy, cs) {
 
         const ct = cornerType(next.x, next.y);
 
-        if (ct === 'convex') {
+        if (ct === 'convex' || ct === 'concave') {
             // Approach tangent on curr->next edge
             const dx1 = next.x - curr.x;
             const dy1 = next.y - curr.y;
@@ -907,14 +907,13 @@ function createOuterBoundaryPath(grid, ox, oy, cs) {
             const t1 = Math.min(rad / len1, 1);
             path.lineTo(next.x - dx1 * t1, next.y - dy1 * t1);
 
-            // Arc around the convex corner to exit tangent
+            // Arc around the corner to exit tangent (arcTo handles convex & concave alike)
             const dx2 = nextNext.x - next.x;
             const dy2 = nextNext.y - next.y;
             const len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
             const t2 = Math.min(rad / len2, 1);
             path.arcTo(next.x, next.y, next.x + dx2 * t2, next.y + dy2 * t2, rad);
         } else {
-            // Concave or flat: sharp corner (concave indent is filled by the clip fill)
             path.lineTo(next.x, next.y);
         }
     }
