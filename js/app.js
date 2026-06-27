@@ -1079,27 +1079,28 @@ function calcCellSize() {
 
     if (isLandscape) {
         // ---- Landscape: bank on the right ----
-        // Width: tray shares space with bank. Estimate bank width from typical bcs~18.
-        const estBankWidth = 8 * 18 + 48; // ~192px (2 wide pieces + padding)
-        const availWidth = Math.min(window.innerWidth - 28, 900) - estBankWidth - 12;
+        // Width: tray shares space with bank. Bank max-width = 8*bcs+48, bcs ≤ 24.
+        const estBankWidth = 8 * 22 + 48; // ~224px (2 wide pieces + padding, mid-range bcs)
+        const maxContentWidth = 872; // matches CSS: #app max-width 900px - padding 28px
+        const availWidth = Math.min(window.innerWidth - 28, maxContentWidth) - estBankWidth - 4;
         cs = Math.floor((availWidth - TRAY_PADDING * 2) / TRAY_COLS);
 
-        // Height: bank doesn't sit below tray, so overhead is just fixed UI
-        // App padding (~24) + header (~38) + date (~32) + controls (~40) + gaps (~30) ≈ 164
-        const fixedOverhead = 180;
+        // Height: bank sits beside tray, so overhead is just fixed UI
+        // App padding + header + date + controls + footer + gaps ≈ 190
+        const fixedOverhead = 190;
         const csFromHeight = Math.floor((window.innerHeight - fixedOverhead - TRAY_PADDING * 2) / effectiveRows());
         cs = Math.min(cs, csFromHeight);
 
         cs = Math.max(cs, 20);
-        cs = Math.min(cs, 60);
+        cs = Math.min(cs, 80);
     } else {
         // ---- Portrait: bank below tray ----
         const mw = Math.min(window.innerWidth - 28, 520);
         cs = Math.floor((mw - TRAY_PADDING * 2) / TRAY_COLS);
 
-        // Fixed overhead: app padding + header + date + tray pad + bank (~3 tray-cell units) + controls + gaps
+        // Fixed overhead: app padding + header + date + bank (~2.5 tray-cell units) + controls + gaps + footer
         const fixedOverhead = 240;
-        const cellUsage = effectiveRows() + 3;
+        const cellUsage = effectiveRows() + 2.5;
         const csFromHeight = Math.floor((window.innerHeight - fixedOverhead - TRAY_PADDING * 2) / cellUsage);
         cs = Math.min(cs, csFromHeight);
 
