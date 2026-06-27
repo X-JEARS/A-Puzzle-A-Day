@@ -4,6 +4,8 @@
 
 A daily polyomino puzzle — fit pieces into the tray so that the uncovered cells reveal today's month, day, and weekday.
 
+**在线体验 / Live Demo:** [1p1d.hanasaka.net](https://1p1d.hanasaka.net)
+
 ![screenshot](screenshot.png)
 
 ## 玩法 / How to Play
