@@ -1010,13 +1010,13 @@ function renderTray() {
     ctx.fillStyle = trayRecess;
     ctx.fillRect(0, 0, w, h);
 
-    // Inner stroke along recess perimeter (bevel gradient, same approach as pieces)
-    const recessSW = Math.max(0.8, Math.min(Math.round(cs * 0.04), 2.5));
+    // Inner stroke along recess perimeter (same parameters as piece stroke)
+    const recessSW = Math.max(0.4, Math.min(Math.round(cs * 0.035), 1.5));
     ctx.lineWidth = recessSW * 2;
     const recessSG = ctx.createLinearGradient(TRAY_PADDING, TRAY_PADDING, w - TRAY_PADDING, h - TRAY_PADDING);
-    recessSG.addColorStop(0, 'rgba(220,220,220,0.15)');
-    recessSG.addColorStop(0.5, 'rgba(0,0,0,0.03)');
-    recessSG.addColorStop(1, 'rgba(0,0,0,0.2)');
+    recessSG.addColorStop(0, 'rgba(220,220,220,0.18)');
+    recessSG.addColorStop(0.5, 'rgba(0,0,0,0.05)');
+    recessSG.addColorStop(1, 'rgba(0,0,0,0.3)');
     ctx.strokeStyle = recessSG;
     ctx.stroke(recessPath);
 
