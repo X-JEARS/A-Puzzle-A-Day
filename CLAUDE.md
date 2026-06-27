@@ -20,8 +20,8 @@ npx serve .
 
 ### Rendering: Dual approach
 
-- **Tray** (`#board-canvas`): Canvas 2D API with `devicePixelRatio` scaling. Cells are rendered with rounded convex corners via `createRoundedGridPath()` which builds per-cell paths using `moveTo`/`lineTo`/`arcTo` and combines them with `addPath()`. Convex corners (where exactly 1 of 4 cells meets at a grid intersection) are rounded; interior junctions stay sharp so adjacent cells remain seamless. Pieces on the tray are rendered to the same canvas via `drawPieceAt()` which clips to a compound path and fills with a bevel gradient — no per-cell strokes, no drop shadows, no piece numbers.
-- **Piece bank** (`#piece-bank`): Individual `<canvas>` elements inside `<div>` containers in the DOM, one per unplaced piece. Rendered with the same `createRoundedGridPath()` technique. Bank piece cell size (`bankCellSize()`) scales proportionally to tray cell size (`cs * 0.45`, clamped to [13, 24]).
+- **Tray** (`#board-canvas`): Canvas 2D API with `devicePixelRatio` scaling. The tray recess (L-shaped playing area) and placed pieces are rendered on the same canvas. Piece shapes are built via `createRoundedGridPath()` which constructs per-cell paths with convex-only `arcTo` rounding; concave corners are filled afterward via `drawConcaveFill()` which draws a small arc sector at each concave grid intersection. Pieces use `drawPieceAt()` which clips to the compound path, fills with a bevel gradient, then applies concave corner fills. No per-cell strokes, no drop shadows, no piece numbers.
+- **Piece bank** (`#piece-bank`): Individual `<canvas>` elements inside `<div>` containers in the DOM, one per unplaced piece. Rendered with the same `createRoundedGridPath()` + `drawConcaveFill()` technique. Bank piece cell size (`bankCellSize()`) scales proportionally to tray cell size (`cs * 0.45`, clamped to [13, 24]).
 
 ### Responsive layout
 
@@ -84,8 +84,13 @@ CSS custom properties on `:root` define light theme; `@media (prefers-color-sche
 Do not use `roundRect` or per-cell strokes. All shapes are built via `createRoundedGridPath(grid, ox, oy, cs)` which constructs a compound `Path2D`:
 - Each filled cell contributes a sub-path with `moveTo`/`lineTo`/`arcTo` (not `rect`).
 - Only **convex** corners are rounded (exactly 1 of 4 cells filled at a grid intersection). This is the `convex()` check inside `createRoundedGridPath()`.
-- **Concave** corners (3 of 4 filled) and interior junctions stay **sharp** so adjacent cells remain seamless.
+- **Concave** corners (3 of 4 filled) are handled separately: after the main shape fill, `drawConcaveFill()` draws a small arc sector at each concave corner. It builds a path from the corner point → along one boundary edge to a tangent point → `arc()` centered at the outer corner of the fill rect → along the other boundary edge back to the corner, then fills with the matching color/gradient. Convex corners get `arcTo` in the per-cell sub-paths; concave corners get `arc()` in the post-fill pass.
 - Sub-paths are combined via `path.addPath(cp)` — the union of all cell sub-paths forms the final shape.
 - Then `ctx.clip(path)` + single fill/gradient — see `drawPieceAt()` in `js/app.js`.
 
 The corner radius scales with cell size: `max(2, min(round(cs * 0.1), 8))`. No drop shadows, no piece ID numbers.
+
+### Concave corner helper functions
+
+- `findConcaveCorners(grid, ox, oy, cs)` — returns `[{cx, cy, emptyQ}]` for each grid intersection where exactly 3 of 4 cells are filled. `emptyQ` is `'nw'|'ne'|'sw'|'se'` indicating the empty quadrant.
+- `drawConcaveFill(ctx, cx, cy, rad, emptyQ, color, grad)` — draws the arc sector at one concave corner. Used in `drawPieceAt()`, `renderPieceBank()`, `createDragClone()`, and tray recess rendering.

@@ -713,6 +713,64 @@ function createPiecePath(shape, ox, oy, cs) {
     return createRoundedGridPath(shape, ox, oy, cs);
 }
 
+// Find concave corners: grid intersections where exactly 3 of 4 cells are filled.
+// Returns [{cx, cy, emptyQ}] in canvas coords; emptyQ is 'nw'|'ne'|'sw'|'se'.
+function findConcaveCorners(grid, ox, oy, cs) {
+    const rows = grid.length;
+    const cols = grid[0]?.length || 0;
+    const f = (r, c) => r >= 0 && r < rows && c >= 0 && c < cols && grid[r][c] === 1;
+    const corners = [];
+    for (let gr = 0; gr <= rows; gr++) {
+        for (let gc = 0; gc <= cols; gc++) {
+            const nw = f(gr - 1, gc - 1), ne = f(gr - 1, gc);
+            const sw = f(gr, gc - 1),     se = f(gr, gc);
+            const n = (nw ? 1 : 0) + (ne ? 1 : 0) + (sw ? 1 : 0) + (se ? 1 : 0);
+            if (n === 3) {
+                const q = !nw ? 'nw' : !ne ? 'ne' : !sw ? 'sw' : 'se';
+                corners.push({ cx: ox + gc * cs, cy: oy + gr * cs, emptyQ: q });
+            }
+        }
+    }
+    return corners;
+}
+
+// Draw a rounded fill at a concave corner. Builds a path:
+//   corner → along one edge to tangent → arc → along other edge back to corner
+function drawConcaveFill(ctx, cx, cy, rad, q, color, grad) {
+    let x1, y1, ox, oy, a1, a2, cw;
+    switch (q) {
+        case 'ne':
+            ox = cx + rad; oy = cy - rad;
+            x1 = cx;       y1 = cy - rad;
+            a1 = Math.PI;  a2 = Math.PI / 2; cw = true;  // a1 > a2 → ccw for 90°
+            break;
+        case 'nw':
+            ox = cx - rad; oy = cy - rad;
+            x1 = cx;       y1 = cy - rad;
+            a1 = 0;        a2 = Math.PI / 2; cw = false;
+            break;
+        case 'sw':
+            ox = cx - rad; oy = cy + rad;
+            x1 = cx - rad; y1 = cy;
+            a1 = -Math.PI / 2; a2 = 0; cw = false;
+            break;
+        case 'se':
+            ox = cx + rad; oy = cy + rad;
+            x1 = cx + rad; y1 = cy;
+            a1 = -Math.PI / 2; a2 = Math.PI; cw = true;
+            break;
+    }
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(x1, y1);
+    ctx.arc(ox, oy, rad, a1, a2, cw);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.fillStyle = grad;
+    ctx.fill();
+}
+
 // Draw a piece at pixel position (no grid snap) — used for drag clone
 function drawPieceAt(shape, ox, oy, cs, color) {
     const path = createPiecePath(shape, ox, oy, cs);
@@ -736,6 +794,13 @@ function drawPieceAt(shape, ox, oy, cs, color) {
     ctx.fillRect(b.x - 20, b.y - 20, b.w + 40, b.h + 40);
 
     ctx.restore();
+
+    // Round concave corners: draw a path from corner → tangent → arc → corner
+    const rad = Math.max(2, Math.min(Math.round(cs * 0.1), 8));
+    const concave = findConcaveCorners(shape, ox, oy, cs);
+    for (const c of concave) {
+        drawConcaveFill(ctx, c.cx, c.cy, rad, c.emptyQ, color, grad);
+    }
 }
 
 // ============================================================
@@ -790,6 +855,13 @@ function renderTray() {
     const recessPath = createRoundedGridPath(trayGrid, TRAY_PADDING, TRAY_PADDING, cs);
     ctx.fillStyle = trayRecess;
     ctx.fill(recessPath);
+
+    // Round concave corners of the tray recess
+    const recessRad = Math.max(2, Math.min(Math.round(cs * 0.1), 8));
+    const recessConcave = findConcaveCorners(trayGrid, TRAY_PADDING, TRAY_PADDING, cs);
+    for (const c of recessConcave) {
+        drawConcaveFill(ctx, c.cx, c.cy, recessRad, c.emptyQ, trayRecess, trayRecess);
+    }
 
     // ---- Edge shadows: where valid cells meet blocked cells ----
     for (let r = 0; r < TRAY_ROWS; r++) {
@@ -920,6 +992,13 @@ function renderPieceBank() {
         pctx.fillStyle = grad;
         pctx.fillRect(bx - 10, by - 10, bw + 20, bh + 20);
         pctx.restore();
+
+        // Round concave corners
+        const bRad = Math.max(2, Math.min(Math.round(bcs * 0.1), 8));
+        const bConcave = findConcaveCorners(shape, 0, 0, bcs);
+        for (const c of bConcave) {
+            drawConcaveFill(pctx, c.cx, c.cy, bRad, c.emptyQ, color, grad);
+        }
 
         container.appendChild(pc);
 
@@ -1112,6 +1191,13 @@ function createDragClone() {
     dctx.fillStyle = grad;
     dctx.fillRect(-10, -10, cols*cs + 20, rows*cs + 20);
     dctx.restore();
+
+    // Round concave corners
+    const dRad = Math.max(2, Math.min(Math.round(cs * 0.1), 8));
+    const dConcave = findConcaveCorners(shape, 0, 0, cs);
+    for (const c of dConcave) {
+        drawConcaveFill(dctx, c.cx, c.cy, dRad, c.emptyQ, color, grad);
+    }
 
     document.body.appendChild(dragClone);
     updateDragClonePosition(gameState.dragClientX, gameState.dragClientY);
