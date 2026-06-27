@@ -363,6 +363,15 @@ body {
     text-align: left;
 }
 
+.help-dialog .btn-action {
+    display: block;
+    margin: 16px auto 0;
+}
+
+.help-dialog h2 {
+    text-align: center;
+}
+
 .help-content {
     margin: 12px 0;
 }
@@ -483,13 +492,12 @@ body {
 .history-item .target-exposed { font-size: 0.85rem; color: var(--text-secondary); }
 
 .lang-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
     margin: 12px 0;
 }
 
 .lang-btn {
+    display: block;
+    width: 100%;
     padding: 10px 16px;
     border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
@@ -499,10 +507,27 @@ body {
     font-family: var(--font);
     font-size: 0.95rem;
     transition: background 0.12s;
+    flex-shrink: 0;
 }
 
 .lang-btn:hover { background: var(--bg-secondary); }
 .lang-btn.active { border-color: var(--accent); background: var(--accent); color: #fff; }
+
+.lang-divider {
+    height: 1px;
+    background: var(--border);
+    opacity: 0.5;
+    margin: 6px 0;
+}
+
+.lang-scroll {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
 
 @keyframes fadeIn {
     from { opacity: 0; }

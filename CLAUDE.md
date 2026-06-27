@@ -20,7 +20,9 @@ npx serve .
 
 ### Puzzle variants (v4)
 
-4 puzzle variants defined in `VARIANTS[]` in `js/app.js`, each with a tray layout and piece subset. Switching is done by clicking the title — opens the variant selector overlay (`#variant-overlay`).
+4 puzzle variants defined in `VARIANTS[]` in `js/app.js`, each with a tray layout and piece subset. Switching is done by clicking the title — opens the variant selector overlay (`#variant-overlay`). Switching variants does not prompt for confirmation (each variant saves independently to its own localStorage slot).
+
+The header title (`#variant-title`) dynamically displays the current variant name via `updateTitle()`. In landscape orientation it shows the full name (`var_*` i18n key); in portrait it shows a short version (`var_*_short` key). `updateTitle()` is called on variant switch, language change, orientation change (resize), and init.
 
 | Variant | Tray Type | Pieces |
 |---------|-----------|--------|
@@ -110,9 +112,13 @@ Theme cycles via `toggleTheme()`: **auto → dark → light → auto**. Auto mod
 
 ### i18n
 
-4 manual languages (zh-CN, en, ja, ko) plus a **"Follow System"** option (`language: 'auto'`). When auto is selected, `detectSystemLanguage()` maps `navigator.language` to the closest supported locale (`zh*` → zh-CN, `ja*` → ja, `ko*` → ko, else en). The `resolvedLanguage()` helper returns the effective language code; all consumers (`t()`, `buildCellMeta()`, `getTodayTarget()`, `renderCalendar()`) use `resolvedLanguage()` instead of `gameState.language` directly. A `languagechange` event listener rebuilds the UI when the system language changes in auto mode.
+9 manual languages (zh-CN, en, ja, ko, ru, fr, de, it, hu) plus a **"Follow System"** option (`language: 'auto'`). When auto is selected, `detectSystemLanguage()` maps `navigator.language` to the closest supported locale (`zh*` → zh-CN, `ja*` → ja, `ko*` → ko, `ru*` → ru, `fr*` → fr, `de*` → de, `it*` → it, `hu*` → hu, else en). The `resolvedLanguage()` helper returns the effective language code; all consumers (`t()`, `buildCellMeta()`, `getTodayTarget()`, `renderCalendar()`) use `resolvedLanguage()` instead of `gameState.language` directly. A `languagechange` event listener rebuilds the UI when the system language changes in auto mode.
 
 `CELL_META` 2D array is rebuilt when language changes (`buildCellMeta()`). UI text uses `data-i18n` attributes populated by `updateAllI18n()` which reads from the `TRANSLATIONS` object. Calendar weekday headers use the `cal_weekdays` i18n key (7-element array, Sunday-first).
+
+The language selector dialog (`#lang-overlay`) renders buttons via `renderLangList()`. The "Follow System" button and divider stay fixed at top; the 9 language buttons scroll in a `.lang-scroll` container (`max-height: 280px`).
+
+Month/weekday display data lives in `I18N_MONTHS` and `I18N_WEEKDAYS` objects, keyed by language code. Each language also has `cal_weekdays` in TRANSLATIONS for the calendar grid headers.
 
 ### CSV data files
 

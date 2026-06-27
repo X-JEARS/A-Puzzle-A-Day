@@ -144,6 +144,11 @@ const I18N_MONTHS = {
     'en': ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
     'ja': ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
     'ko': ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+    'ru': ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'],
+    'fr': ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aoû','Sep','Oct','Nov','Déc'],
+    'de': ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'],
+    'it': ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'],
+    'hu': ['Jan','Feb','Már','Ápr','Máj','Jún','Júl','Aug','Szep','Okt','Nov','Dec'],
 };
 
 const I18N_WEEKDAYS = {
@@ -151,6 +156,11 @@ const I18N_WEEKDAYS = {
     'en': ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
     'ja': ['日曜','月曜','火曜','水曜','木曜','金曜','土曜'],
     'ko': ['일요','월요','화요','수요','목요','금요','토요'],
+    'ru': ['Вск','Пнд','Втр','Срд','Чтв','Птн','Сбт'],
+    'fr': ['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'],
+    'de': ['Son','Mon','Die','Mit','Don','Fre','Sam'],
+    'it': ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'],
+    'hu': ['Vas','Hét','Ked','Sze','Csü','Pén','Szo'],
 };
 
 const TRANSLATIONS = {
@@ -158,7 +168,7 @@ const TRANSLATIONS = {
         title:'A Puzzle A Day', today:'今日目标',
         reset:'重置', undo:'撤销', close:'关闭',
         congrats:'🎉 恭喜！', solved:'你完成了今天的拼图！',
-        history:'拼图历史', select_lang:'选择语言 / Select Language',
+        history:'拼图历史', select_lang:'选择语言',
         no_history:'还没有完成记录，快来挑战今天的拼图吧！',
         exposed:'露出', confirm_reset:'确定要重置吗？所有进度将丢失。',
         drag_hint:'拖入托盘 | 单击旋转 | 双击翻转',
@@ -168,11 +178,14 @@ const TRANSLATIONS = {
         no_pieces_data:'该记录不包含拼图数据，无法恢复',
         viewing_past:'查看历史: ',
         select_variant:'选择拼图',
-        confirm_switch:'切换方案将丢失当前进度，确定继续吗？',
         var_dragonfjord:'DragonFjord\'s A-Puzzle-A-Day',
         var_jarringwords:'JarringWords\'s Calendar Puzzle',
         var_therammer:'TheRammer Puzzle Calendar',
         var_weekday:'WeekDay Calendar Puzzle',
+        var_dragonfjord_short:'DragonFjord',
+        var_jarringwords_short:'JarringWords',
+        var_therammer_short:'TheRammer',
+        var_weekday_short:'WeekDay',
         lang_auto:'跟随系统',
         theme_auto:'主题：自动',
         theme_light:'主题：浅色',
@@ -201,11 +214,14 @@ const TRANSLATIONS = {
         no_pieces_data:'This entry has no puzzle data to restore',
         viewing_past:'Viewing: ',
         select_variant:'Select Puzzle',
-        confirm_switch:'Switch variant? Current progress will be lost.',
         var_dragonfjord:'DragonFjord\'s A-Puzzle-A-Day',
         var_jarringwords:'JarringWords\'s Calendar Puzzle',
         var_therammer:'TheRammer Puzzle Calendar',
         var_weekday:'WeekDay Calendar Puzzle',
+        var_dragonfjord_short:'DragonFjord',
+        var_jarringwords_short:'JarringWords',
+        var_therammer_short:'TheRammer',
+        var_weekday_short:'WeekDay',
         lang_auto:'Follow System',
         theme_auto:'Theme: Auto',
         theme_light:'Theme: Light',
@@ -224,7 +240,7 @@ const TRANSLATIONS = {
         title:'A Puzzle A Day', today:'今日の目標',
         reset:'リセット', undo:'元に戻す', close:'閉じる',
         congrats:'🎉 おめでとう！', solved:'今日のパズルを解きました！',
-        history:'パズル履歴', select_lang:'言語選択 / Select Language',
+        history:'パズル履歴', select_lang:'言語選択',
         no_history:'まだ記録がありません。今日のパズルに挑戦しましょう！',
         exposed:'露出', confirm_reset:'リセットしますか？すべての進行状況が失われます。',
         drag_hint:'ドラッグで配置 | クリックで回転 | ダブルクリックで反転',
@@ -234,11 +250,14 @@ const TRANSLATIONS = {
         no_pieces_data:'この記録にはパズルデータがありません',
         viewing_past:'履歴表示: ',
         select_variant:'パズル選択',
-        confirm_switch:'現在の進行状況が失われます。続行しますか？',
         var_dragonfjord:'DragonFjord\'s A-Puzzle-A-Day',
         var_jarringwords:'JarringWords\'s Calendar Puzzle',
         var_therammer:'TheRammer Puzzle Calendar',
         var_weekday:'WeekDay Calendar Puzzle',
+        var_dragonfjord_short:'DragonFjord',
+        var_jarringwords_short:'JarringWords',
+        var_therammer_short:'TheRammer',
+        var_weekday_short:'WeekDay',
         lang_auto:'システムに従う',
         theme_auto:'テーマ：自動',
         theme_light:'テーマ：ライト',
@@ -257,7 +276,7 @@ const TRANSLATIONS = {
         title:'A Puzzle A Day', today:'오늘의 목표',
         reset:'초기화', undo:'되돌리기', close:'닫기',
         congrats:'🎉 축하합니다!', solved:'오늘의 퍼즐을 풀었습니다!',
-        history:'퍼즐 기록', select_lang:'언어 선택 / Select Language',
+        history:'퍼즐 기록', select_lang:'언어 선택',
         no_history:'아직 기록이 없습니다. 오늘의 퍼즐에 도전하세요!',
         exposed:'노출', confirm_reset:'초기화하시겠습니까? 모든 진행 상황이 손실됩니다.',
         drag_hint:'드래그하여 배치 | 클릭 회전 | 더블클릭 뒤집기',
@@ -267,11 +286,14 @@ const TRANSLATIONS = {
         no_pieces_data:'이 기록에는 퍼즐 데이터가 없습니다',
         viewing_past:'기록 보기: ',
         select_variant:'퍼즐 선택',
-        confirm_switch:'현재 진행 상황이 손실됩니다. 계속하시겠습니까?',
         var_dragonfjord:'DragonFjord\'s A-Puzzle-A-Day',
         var_jarringwords:'JarringWords\'s Calendar Puzzle',
         var_therammer:'TheRammer Puzzle Calendar',
         var_weekday:'WeekDay Calendar Puzzle',
+        var_dragonfjord_short:'DragonFjord',
+        var_jarringwords_short:'JarringWords',
+        var_therammer_short:'TheRammer',
+        var_weekday_short:'WeekDay',
         lang_auto:'시스템 따르기',
         theme_auto:'테마: 자동',
         theme_light:'테마: 라이트',
@@ -286,6 +308,186 @@ const TRANSLATIONS = {
         help_goal:'모든 조각을 배치하여 오늘의 월, 일(및 해당 변형의 경우 요일)만 보이도록 합니다.',
         help_footer_prefix:'Generated by DeepSeek V4 Pro, designed by',
     },
+    'ru': {
+        title:'A Puzzle A Day', today:'Сегодня',
+        reset:'Сброс', undo:'Отмена', close:'Закрыть',
+        congrats:'🎉 Поздравляем!', solved:'Вы решили сегодняшнюю головоломку!',
+        history:'История', select_lang:'Выбор языка',
+        no_history:'Нет записей. Решите сегодняшнюю головоломку!',
+        exposed:'Открыто', confirm_reset:'Вы уверены? Весь прогресс будет потерян.',
+        drag_hint:'Перетащите на доску | Нажмите для поворота | Двойной клик для отражения',
+        tray_empty:'Все фигуры размещены ✓',
+        return_to_today:'Вернуться к сегодня',
+        cal_weekdays:['Вс','Пн','Вт','Ср','Чт','Пт','Сб'],
+        no_pieces_data:'В этой записи нет данных',
+        viewing_past:'Просмотр: ',
+        select_variant:'Выбрать вариант',
+        var_dragonfjord:'DragonFjord\'s A-Puzzle-A-Day',
+        var_jarringwords:'JarringWords\'s Calendar Puzzle',
+        var_therammer:'TheRammer Puzzle Calendar',
+        var_weekday:'WeekDay Calendar Puzzle',
+        var_dragonfjord_short:'DragonFjord',
+        var_jarringwords_short:'JarringWords',
+        var_therammer_short:'TheRammer',
+        var_weekday_short:'WeekDay',
+        lang_auto:'Как в системе',
+        theme_auto:'Тема: Авто',
+        theme_light:'Тема: Светлая',
+        theme_dark:'Тема: Тёмная',
+        help_title:'Как играть',
+        help_controls_title:'Управление',
+        help_ctrl_drag:'Перетащите фигуру на поддон',
+        help_ctrl_rotate:'Нажмите для поворота',
+        help_ctrl_flip:'Двойной клик для отражения',
+        help_ctrl_return:'Перетащите фигуру с поддона обратно',
+        help_goal_title:'Цель',
+        help_goal:'Заполните поддон так, чтобы видны были только сегодняшние месяц, число (и день недели для соответствующих вариантов).',
+        help_footer_prefix:'Создано DeepSeek V4 Pro, дизайн от',
+    },
+    'fr': {
+        title:'A Puzzle A Day', today:'Aujourd\'hui',
+        reset:'Réinitialiser', undo:'Annuler', close:'Fermer',
+        congrats:'🎉 Félicitations !', solved:'Vous avez résolu le puzzle du jour !',
+        history:'Historique', select_lang:'Choisir la langue',
+        no_history:'Pas encore d\'enregistrement. Résolvez le puzzle du jour !',
+        exposed:'Exposé', confirm_reset:'Êtes-vous sûr ? Tout progrès sera perdu.',
+        drag_hint:'Glissez sur le plateau | Clic pour pivoter | Double-clic pour retourner',
+        tray_empty:'Toutes les pièces placées ✓',
+        return_to_today:'Revenir à aujourd\'hui',
+        cal_weekdays:['Di','Lu','Ma','Me','Je','Ve','Sa'],
+        no_pieces_data:'Cette entrée n\'a pas de données',
+        viewing_past:'Affichage : ',
+        select_variant:'Choisir le puzzle',
+        var_dragonfjord:'DragonFjord\'s A-Puzzle-A-Day',
+        var_jarringwords:'JarringWords\'s Calendar Puzzle',
+        var_therammer:'TheRammer Puzzle Calendar',
+        var_weekday:'WeekDay Calendar Puzzle',
+        var_dragonfjord_short:'DragonFjord',
+        var_jarringwords_short:'JarringWords',
+        var_therammer_short:'TheRammer',
+        var_weekday_short:'WeekDay',
+        lang_auto:'Suivre le système',
+        theme_auto:'Thème : Auto',
+        theme_light:'Thème : Clair',
+        theme_dark:'Thème : Sombre',
+        help_title:'Comment jouer',
+        help_controls_title:'Contrôles',
+        help_ctrl_drag:'Glissez une pièce sur le plateau',
+        help_ctrl_rotate:'Cliquez sur une pièce pour pivoter',
+        help_ctrl_flip:'Double-cliquez pour retourner',
+        help_ctrl_return:'Retirez une pièce du plateau vers la réserve',
+        help_goal_title:'Objectif',
+        help_goal:'Remplissez le plateau avec toutes les pièces de sorte que seuls le mois, le jour (et le jour de la semaine pour les variantes applicables) d\'aujourd\'hui restent visibles.',
+        help_footer_prefix:'Généré par DeepSeek V4 Pro, conçu par',
+    },
+    'de': {
+        title:'A Puzzle A Day', today:'Heutiges Ziel',
+        reset:'Zurücksetzen', undo:'Rückgängig', close:'Schließen',
+        congrats:'🎉 Glückwunsch!', solved:'Du hast das heutige Puzzle gelöst!',
+        history:'Verlauf', select_lang:'Sprache wählen',
+        no_history:'Noch keine Einträge. Löse das heutige Puzzle!',
+        exposed:'Sichtbar', confirm_reset:'Bist du sicher? Alle Fortschritte gehen verloren.',
+        drag_hint:'Ziehen zum Platzieren | Klick zum Drehen | Doppelklick zum Spiegeln',
+        tray_empty:'Alle Teile platziert ✓',
+        return_to_today:'Zurück zu heute',
+        cal_weekdays:['So','Mo','Di','Mi','Do','Fr','Sa'],
+        no_pieces_data:'Dieser Eintrag hat keine Puzzle-Daten',
+        viewing_past:'Ansicht: ',
+        select_variant:'Puzzle wählen',
+        var_dragonfjord:'DragonFjord\'s A-Puzzle-A-Day',
+        var_jarringwords:'JarringWords\'s Calendar Puzzle',
+        var_therammer:'TheRammer Puzzle Calendar',
+        var_weekday:'WeekDay Calendar Puzzle',
+        var_dragonfjord_short:'DragonFjord',
+        var_jarringwords_short:'JarringWords',
+        var_therammer_short:'TheRammer',
+        var_weekday_short:'WeekDay',
+        lang_auto:'System folgen',
+        theme_auto:'Theme: Auto',
+        theme_light:'Theme: Hell',
+        theme_dark:'Theme: Dunkel',
+        help_title:'Spielanleitung',
+        help_controls_title:'Steuerung',
+        help_ctrl_drag:'Ziehe ein Teil auf das Tablett',
+        help_ctrl_rotate:'Klicke zum Drehen',
+        help_ctrl_flip:'Doppelklicke zum Spiegeln',
+        help_ctrl_return:'Ziehe ein Teil vom Tablett zurück',
+        help_goal_title:'Ziel',
+        help_goal:'Fülle das Tablett so, dass nur der heutige Monat, Tag (und Wochentag für entsprechende Varianten) sichtbar bleiben.',
+        help_footer_prefix:'Erstellt von DeepSeek V4 Pro, Design von',
+    },
+    'it': {
+        title:'A Puzzle A Day', today:'Obiettivo di oggi',
+        reset:'Ripristina', undo:'Annulla', close:'Chiudi',
+        congrats:'🎉 Congratulazioni!', solved:'Hai risolto il puzzle di oggi!',
+        history:'Cronologia', select_lang:'Seleziona lingua',
+        no_history:'Nessun record. Risolvi il puzzle di oggi!',
+        exposed:'Esposto', confirm_reset:'Sei sicuro? Tutti i progressi andranno persi.',
+        drag_hint:'Trascina sul vassoio | Clic per ruotare | Doppio clic per capovolgere',
+        tray_empty:'Tutti i pezzi posizionati ✓',
+        return_to_today:'Torna ad oggi',
+        cal_weekdays:['Do','Lu','Ma','Me','Gi','Ve','Sa'],
+        no_pieces_data:'Questa voce non ha dati del puzzle',
+        viewing_past:'Visualizzazione: ',
+        select_variant:'Seleziona puzzle',
+        var_dragonfjord:'DragonFjord\'s A-Puzzle-A-Day',
+        var_jarringwords:'JarringWords\'s Calendar Puzzle',
+        var_therammer:'TheRammer Puzzle Calendar',
+        var_weekday:'WeekDay Calendar Puzzle',
+        var_dragonfjord_short:'DragonFjord',
+        var_jarringwords_short:'JarringWords',
+        var_therammer_short:'TheRammer',
+        var_weekday_short:'WeekDay',
+        lang_auto:'Segui sistema',
+        theme_auto:'Tema: Auto',
+        theme_light:'Tema: Chiaro',
+        theme_dark:'Tema: Scuro',
+        help_title:'Come giocare',
+        help_controls_title:'Controlli',
+        help_ctrl_drag:'Trascina un pezzo sul vassoio',
+        help_ctrl_rotate:'Clicca un pezzo per ruotare',
+        help_ctrl_flip:'Doppio clic per capovolgere',
+        help_ctrl_return:'Trascina un pezzo dal vassoio alla riserva',
+        help_goal_title:'Obiettivo',
+        help_goal:'Riempi il vassoio con tutti i pezzi in modo che solo il mese, il giorno (e il giorno della settimana per le varianti applicabili) di oggi rimangano visibili.',
+        help_footer_prefix:'Generato da DeepSeek V4 Pro, design di',
+    },
+    'hu': {
+        title:'A Puzzle A Day', today:'Mai cél',
+        reset:'Visszaállítás', undo:'Visszavonás', close:'Bezárás',
+        congrats:'🎉 Gratulálunk!', solved:'Megoldottad a mai feladványt!',
+        history:'Előzmények', select_lang:'Nyelv kiválasztása',
+        no_history:'Még nincs bejegyzés. Oldd meg a mai feladványt!',
+        exposed:'Látható', confirm_reset:'Biztos vagy benne? Minden haladás elveszik.',
+        drag_hint:'Húzd a táblára | Kattints a forgatáshoz | Dupla kattintás a tükrözéshez',
+        tray_empty:'Minden elem elhelyezve ✓',
+        return_to_today:'Vissza a maihoz',
+        cal_weekdays:['V','H','K','Sze','Cs','P','Szo'],
+        no_pieces_data:'Ennek a bejegyzésnek nincs feladvány adata',
+        viewing_past:'Megtekintés: ',
+        select_variant:'Feladvány választása',
+        var_dragonfjord:'DragonFjord\'s A-Puzzle-A-Day',
+        var_jarringwords:'JarringWords\'s Calendar Puzzle',
+        var_therammer:'TheRammer Puzzle Calendar',
+        var_weekday:'WeekDay Calendar Puzzle',
+        var_dragonfjord_short:'DragonFjord',
+        var_jarringwords_short:'JarringWords',
+        var_therammer_short:'TheRammer',
+        var_weekday_short:'WeekDay',
+        lang_auto:'Rendszer követése',
+        theme_auto:'Téma: Auto',
+        theme_light:'Téma: Világos',
+        theme_dark:'Téma: Sötét',
+        help_title:'Játék útmutató',
+        help_controls_title:'Kezelés',
+        help_ctrl_drag:'Húzz egy elemet a tálcára',
+        help_ctrl_rotate:'Kattints egy elemre a forgatáshoz',
+        help_ctrl_flip:'Dupla kattintás a tükrözéshez',
+        help_ctrl_return:'Húzz egy elemet a tálcáról vissza a készletbe',
+        help_goal_title:'Cél',
+        help_goal:'Töltsd meg a tálcát az összes elemmel úgy, hogy csak a mai hónap, nap (és a megfelelő változatoknál a hét napja) maradjon látható.',
+        help_footer_prefix:'Készítette: DeepSeek V4 Pro, tervezte:',
+    },
 };
 
 const LANGUAGES = [
@@ -293,6 +495,11 @@ const LANGUAGES = [
     { code:'en', name:'English', nativeName:'English' },
     { code:'ja', name:'日本語', nativeName:'日本語 (Japanese)' },
     { code:'ko', name:'한국어', nativeName:'한국어 (Korean)' },
+    { code:'ru', name:'Русский', nativeName:'Русский (Russian)' },
+    { code:'fr', name:'Français', nativeName:'Français (French)' },
+    { code:'de', name:'Deutsch', nativeName:'Deutsch (German)' },
+    { code:'it', name:'Italiano', nativeName:'Italiano (Italian)' },
+    { code:'hu', name:'Magyar', nativeName:'Magyar (Hungarian)' },
 ];
 
 function detectSystemLanguage() {
@@ -300,6 +507,11 @@ function detectSystemLanguage() {
     if (nav.startsWith('zh')) return 'zh-CN';
     if (nav.startsWith('ja')) return 'ja';
     if (nav.startsWith('ko')) return 'ko';
+    if (nav.startsWith('ru')) return 'ru';
+    if (nav.startsWith('fr')) return 'fr';
+    if (nav.startsWith('de')) return 'de';
+    if (nav.startsWith('it')) return 'it';
+    if (nav.startsWith('hu')) return 'hu';
     return 'en';
 }
 
@@ -318,6 +530,14 @@ function updateAllI18n() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         el.textContent = t(el.getAttribute('data-i18n'));
     });
+}
+
+function updateTitle() {
+    const variant = getVariant();
+    const isLandscape = window.innerWidth > window.innerHeight;
+    const key = isLandscape ? variant.nameKey : (variant.nameKey + '_short');
+    const titleEl = document.getElementById('variant-title');
+    if (titleEl) titleEl.textContent = t(key);
 }
 
 // ============================================================
@@ -690,6 +910,7 @@ function restoreHistoryState(dateKey) {
     renderTray();
     renderPieceBank();
     updateAllI18n();
+    updateTitle();
     updateTargetDisplay();
 
     // Close dialog
@@ -710,6 +931,7 @@ function returnToToday() {
     renderTray();
     renderPieceBank();
     updateAllI18n();
+    updateTitle();
     updateTargetDisplay();
 }
 
@@ -1649,16 +1871,17 @@ function setupUI() {
         if (gameState.language === 'auto') {
             buildCellMeta(detectSystemLanguage(), getVariant().trayType);
             updateAllI18n();
+            updateTitle();
             renderTray();
             renderPieceBank();
         }
     });
 
-    // Resize
+    // Resize — also updates title for orientation-based short/full name
     let rt;
     window.addEventListener('resize', () => {
         clearTimeout(rt);
-        rt = setTimeout(() => { renderTray(); renderPieceBank(); }, 150);
+        rt = setTimeout(() => { updateTitle(); renderTray(); renderPieceBank(); }, 150);
     });
 }
 
@@ -1666,7 +1889,7 @@ function renderLangList() {
     const list = document.getElementById('lang-list');
     list.innerHTML = '';
 
-    // "Follow system" option
+    // "Follow system" option — fixed at top
     const autoBtn = document.createElement('button');
     autoBtn.className = 'lang-btn';
     if (gameState.language === 'auto') autoBtn.classList.add('active');
@@ -1676,8 +1899,12 @@ function renderLangList() {
 
     // Divider
     const divider = document.createElement('div');
-    divider.style.cssText = 'height:1px;background:var(--border);margin:2px 0;opacity:0.5';
+    divider.className = 'lang-divider';
     list.appendChild(divider);
+
+    // Scrollable language list
+    const scroll = document.createElement('div');
+    scroll.className = 'lang-scroll';
 
     LANGUAGES.forEach(l => {
         const btn = document.createElement('button');
@@ -1685,8 +1912,10 @@ function renderLangList() {
         if (l.code === gameState.language) btn.classList.add('active');
         btn.textContent = l.nativeName;
         btn.addEventListener('click', () => setLanguage(l.code));
-        list.appendChild(btn);
+        scroll.appendChild(btn);
     });
+
+    list.appendChild(scroll);
 }
 
 function setLanguage(code) {
@@ -1694,6 +1923,7 @@ function setLanguage(code) {
     buildCellMeta(resolvedLanguage(), getVariant().trayType);
     saveSettings();
     updateAllI18n();
+    updateTitle();
     renderTray();
     renderPieceBank();
     document.getElementById('lang-overlay').classList.add('hidden');
@@ -1702,11 +1932,6 @@ function setLanguage(code) {
 // ============================================================
 // VARIANT SELECTOR
 // ============================================================
-function hasUnsavedProgress() {
-    return gameState.undoStack.length > 0 ||
-           gameState.pieces.some(p => p.row >= 0);
-}
-
 function renderVariantList() {
     const list = document.getElementById('variant-list');
     list.innerHTML = '';
@@ -1725,9 +1950,6 @@ function switchVariant(variantId) {
         document.getElementById('variant-overlay').classList.add('hidden');
         return;
     }
-    if (hasUnsavedProgress()) {
-        if (!confirm(t('confirm_switch') || 'Switch variant? Current progress will be lost.')) return;
-    }
     gameState.variant = variantId;
     gameState.viewingDate = null;
     buildCellMeta(resolvedLanguage(), getVariant().trayType);
@@ -1737,6 +1959,7 @@ function switchVariant(variantId) {
     renderTray();
     renderPieceBank();
     updateAllI18n();
+    updateTitle();
     updateTargetDisplay();
     document.getElementById('variant-overlay').classList.add('hidden');
     if (loaded && checkWin()) setTimeout(handleWin, 500);
@@ -1835,6 +2058,7 @@ function init() {
     renderTray();
     renderPieceBank();
     updateAllI18n();
+    updateTitle();
     updateTargetDisplay();
     setupUI();
 
