@@ -123,6 +123,23 @@ body {
     font-weight: 700;
     letter-spacing: -0.02em;
     color: var(--accent);
+    cursor: pointer;
+    position: relative;
+    padding-right: 20px;
+    transition: opacity 0.15s;
+    user-select: none;
+}
+.title:hover {
+    opacity: 0.8;
+}
+.title::after {
+    content: '▾';
+    font-size: 0.6em;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.5;
 }
 
 .header-controls {
@@ -306,6 +323,46 @@ body {
     max-width: 480px;
     max-height: 70vh;
     overflow-y: auto;
+}
+
+/* === Variant Dialog === */
+.variant-dialog {
+    max-width: 440px;
+}
+
+.variant-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 14px 0 6px;
+}
+
+.variant-btn {
+    padding: 12px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+    color: var(--text);
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 0.92rem;
+    text-align: left;
+    transition: background 0.12s, border-color 0.12s;
+    line-height: 1.4;
+}
+
+.variant-btn:hover {
+    background: var(--bg-secondary);
+}
+
+.variant-btn.active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+}
+
+.variant-btn.active strong {
+    color: #fff;
 }
 
 .history-list {

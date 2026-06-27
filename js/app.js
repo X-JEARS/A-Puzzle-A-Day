@@ -1,5 +1,5 @@
 // ============================================================
-// A Puzzle A Day - Complete Game Engine v3
+// A Puzzle A Day - Complete Game Engine v4
 // ============================================================
 
 // ============================================================
@@ -7,26 +7,59 @@
 // ============================================================
 const PIECE_DEFS = [
     { id: 1, shape: [[1, 1, 1, 1]] },
-    { id: 2, shape: [[1, 1, 1, 1], [0, 0, 0, 1]] },
-    { id: 3, shape: [[1, 1, 1, 0], [0, 0, 1, 1]] },
-    { id: 4, shape: [[1, 1, 1], [0, 1, 1]] },
-    { id: 5, shape: [[1, 1, 1], [1, 0, 1]] },
-    { id: 6, shape: [[1, 1, 1], [0, 0, 1]] },
-    { id: 7, shape: [[0, 1, 1], [1, 1, 0]] },
-    { id: 8, shape: [[1, 1, 1], [0, 0, 1], [0, 0, 1]] },
-    { id: 9, shape: [[1, 1, 1], [0, 1, 0], [0, 1, 0]] },
-    { id: 10, shape: [[1, 1, 0], [0, 1, 0], [0, 1, 1]] },
+    { id: 2, shape: [[1, 1, 1, 1], [1, 0, 0, 0]] },
+    { id: 3, shape: [[1, 1, 1, 1], [0, 0, 1, 0]] },
+    { id: 4, shape: [[0, 0, 1, 1], [1, 1, 1, 0]] },
+    { id: 5, shape: [[1, 1, 1], [1, 1, 1]] },
+    { id: 6, shape: [[1, 1, 1], [0, 1, 1]] },
+    { id: 7, shape: [[1, 1, 1], [1, 0, 1]] },
+    { id: 8, shape: [[1, 1, 1], [1, 0, 0]] },
+    { id: 9, shape: [[1, 1, 1], [0, 1, 0]] },
+    { id: 10, shape: [[0, 1, 1], [1, 1, 0]] },
+    { id: 11, shape: [[1, 1], [1, 1]] },
+    { id: 12, shape: [[1, 1, 1], [1, 0, 0], [1, 0, 0]] },
+    { id: 13, shape: [[1, 1, 1], [0, 1, 0], [0, 1, 0]] },
+    { id: 14, shape: [[1, 1, 0], [0, 1, 0], [0, 1, 1]] },
 ];
 
 const PIECE_COLORS = [
     '#E85D4E', '#4A9FE8', '#3ECB7B', '#F5A040', '#9B6FC0',
-    '#1EC0A8', '#E88040', '#E85578', '#10B8CC', '#8EC850'
+    '#1EC0A8', '#E88040', '#E85578', '#10B8CC', '#8EC850', '#D4789E', '#7EB8DA', '#C4A45A', '#6DBE6D'
 ];
 
 const PIECE_COLORS_DARK = [
     '#F07070', '#60B0E0', '#50E090', '#F5B840', '#B880D0',
-    '#40D0B8', '#F09050', '#F05080', '#30D8F0', '#A0D860'
+    '#40D0B8', '#F09050', '#F05080', '#30D8F0', '#A0D860', '#E090B0', '#90C8EA', '#D4B86A', '#80D080'
 ];
+
+// ============================================================
+// DATA: Puzzle Variants & Tray Layouts
+// ============================================================
+const TRAY_CONFIGS = {
+    'full': {
+        blocked: ['0,6','1,6','7,0','7,1','7,2','7,3'],
+        hasWeekdays: true,
+    },
+    'no-weekdays': {
+        blocked: ['0,6','1,6','6,3','6,4','6,5','6,6','7,0','7,1','7,2','7,3','7,4','7,5','7,6'],
+        hasWeekdays: false,
+    },
+    'no-weekdays-alt': {
+        blocked: ['0,6','1,6','6,0','6,1','6,2','6,3','7,0','7,1','7,2','7,3','7,4','7,5','7,6'],
+        hasWeekdays: false,
+    },
+};
+
+const VARIANTS = [
+    { id: 'dragonfjord',  nameKey: 'var_dragonfjord',  trayType: 'no-weekdays',     pieceIds: [2,3,4,5,6,7,12,14] },
+    { id: 'jarringwords', nameKey: 'var_jarringwords', trayType: 'no-weekdays',     pieceIds: [2,3,4,5,6,7,12,13] },
+    { id: 'therammer',    nameKey: 'var_therammer',    trayType: 'no-weekdays-alt', pieceIds: [1,5,6,7,8,9,10,11,12] },
+    { id: 'weekday',      nameKey: 'var_weekday',      trayType: 'full',            pieceIds: [1,2,4,6,7,8,10,12,13,14] },
+];
+
+function getVariant() {
+    return VARIANTS.find(v => v.id === gameState.variant) || VARIANTS[0];
+}
 
 // ============================================================
 // DATA: Tray
@@ -35,33 +68,48 @@ const TRAY_COLS = 7;
 const TRAY_ROWS = 8;
 const TRAY_PADDING = 18;
 
-const BLOCKED_CELLS = new Set([
-    '0,6', '1,6', '7,0', '7,1', '7,2', '7,3'
-]);
+let _blockedCells = new Set();
 
 const CELL_META = [];
 
-function buildCellMeta(lang) {
+function buildCellMeta(lang, trayType) {
+    const config = TRAY_CONFIGS[trayType] || TRAY_CONFIGS['full'];
     const months = I18N_MONTHS[lang];
     const weekdays = I18N_WEEKDAYS[lang];
+
+    // Rebuild the dynamic blocked set from tray config
+    _blockedCells = new Set(config.blocked);
+
     for (let r = 0; r < TRAY_ROWS; r++) {
         CELL_META[r] = [];
         for (let c = 0; c < TRAY_COLS; c++) {
             const key = `${r},${c}`;
-            if (BLOCKED_CELLS.has(key)) {
+            if (_blockedCells.has(key)) {
                 CELL_META[r][c] = { label: '', type: 'blocked' };
             } else if (r === 0) {
                 CELL_META[r][c] = { label: months[c], type: 'month' };
             } else if (r === 1) {
                 CELL_META[r][c] = { label: months[6 + c], type: 'month' };
-            } else if (r >= 2 && r <= 6) {
+            } else if (r >= 2 && r <= 6 && trayType !== 'no-weekdays-alt') {
+                // Standard day layout: left-to-right fill
                 const dayNum = (r - 2) * 7 + c + 1;
                 if (dayNum <= 31) {
                     CELL_META[r][c] = { label: String(dayNum), type: 'day' };
-                } else {
+                } else if (config.hasWeekdays) {
                     CELL_META[r][c] = { label: weekdays[c - 3], type: 'weekday' };
                 }
-            } else if (r === 7) {
+            } else if (r >= 2 && r <= 6 && trayType === 'no-weekdays-alt') {
+                // Custom: days 1-28 standard, 29-31 at row 6 cols 4-6
+                if (r < 6) {
+                    const dayNum = (r - 2) * 7 + c + 1;
+                    if (dayNum <= 28) {
+                        CELL_META[r][c] = { label: String(dayNum), type: 'day' };
+                    }
+                } else if (r === 6 && c >= 4) {
+                    const dayNum = 29 + (c - 4);  // col 4=29, 5=30, 6=31
+                    CELL_META[r][c] = { label: String(dayNum), type: 'day' };
+                }
+            } else if (r === 7 && config.hasWeekdays) {
                 CELL_META[r][c] = { label: weekdays[4 + (c - 4)], type: 'weekday' };
             }
         }
@@ -99,6 +147,12 @@ const TRANSLATIONS = {
         cal_weekdays:['日','一','二','三','四','五','六'],
         no_pieces_data:'该记录不包含拼图数据，无法恢复',
         viewing_past:'查看历史: ',
+        select_variant:'选择拼图',
+        confirm_switch:'切换方案将丢失当前进度，确定继续吗？',
+        var_dragonfjord:'DragonFjord\'s A-Puzzle-A-Day',
+        var_jarringwords:'JarringWords\'s Calendar Puzzle',
+        var_therammer:'TheRammer Puzzle Calendar',
+        var_weekday:'WeekDay Calendar Puzzle',
     },
     'en': {
         title:'A Puzzle A Day', today:'Today\'s Target',
@@ -113,6 +167,12 @@ const TRANSLATIONS = {
         cal_weekdays:['Su','Mo','Tu','We','Th','Fr','Sa'],
         no_pieces_data:'This entry has no puzzle data to restore',
         viewing_past:'Viewing: ',
+        select_variant:'Select Puzzle',
+        confirm_switch:'Switch variant? Current progress will be lost.',
+        var_dragonfjord:'DragonFjord\'s A-Puzzle-A-Day',
+        var_jarringwords:'JarringWords\'s Calendar Puzzle',
+        var_therammer:'TheRammer Puzzle Calendar',
+        var_weekday:'WeekDay Calendar Puzzle',
     },
     'ja': {
         title:'A Puzzle A Day', today:'今日の目標',
@@ -127,6 +187,12 @@ const TRANSLATIONS = {
         cal_weekdays:['日','月','火','水','木','金','土'],
         no_pieces_data:'この記録にはパズルデータがありません',
         viewing_past:'履歴表示: ',
+        select_variant:'パズル選択',
+        confirm_switch:'現在の進行状況が失われます。続行しますか？',
+        var_dragonfjord:'DragonFjord\'s A-Puzzle-A-Day',
+        var_jarringwords:'JarringWords\'s Calendar Puzzle',
+        var_therammer:'TheRammer Puzzle Calendar',
+        var_weekday:'WeekDay Calendar Puzzle',
     },
     'ko': {
         title:'A Puzzle A Day', today:'오늘의 목표',
@@ -141,6 +207,12 @@ const TRANSLATIONS = {
         cal_weekdays:['일','월','화','수','목','금','토'],
         no_pieces_data:'이 기록에는 퍼즐 데이터가 없습니다',
         viewing_past:'기록 보기: ',
+        select_variant:'퍼즐 선택',
+        confirm_switch:'현재 진행 상황이 손실됩니다. 계속하시겠습니까?',
+        var_dragonfjord:'DragonFjord\'s A-Puzzle-A-Day',
+        var_jarringwords:'JarringWords\'s Calendar Puzzle',
+        var_therammer:'TheRammer Puzzle Calendar',
+        var_weekday:'WeekDay Calendar Puzzle',
     },
 };
 
@@ -167,6 +239,7 @@ function updateAllI18n() {
 // STATE
 // ============================================================
 const gameState = {
+    variant: 'dragonfjord',
     pieces: [],
     cellSize: 52,
     language: 'zh-CN',
@@ -197,14 +270,17 @@ const gameState = {
 let dragClone = null;
 
 function initPieces() {
-    gameState.pieces = PIECE_DEFS.map(def => ({
-        id: def.id,
-        baseShape: def.shape.map(row => [...row]),
-        rotation: 0,
-        reflected: false,
-        row: -1,
-        col: -1,
-    }));
+    const variant = getVariant();
+    gameState.pieces = PIECE_DEFS
+        .filter(def => variant.pieceIds.includes(def.id))
+        .map(def => ({
+            id: def.id,
+            baseShape: def.shape.map(row => [...row]),
+            rotation: 0,
+            reflected: false,
+            row: -1,
+            col: -1,
+        }));
     gameState.undoStack = [];
     clearDragState();
 }
@@ -285,7 +361,7 @@ function getPiecePixelBounds(piece, ox, oy, cs) {
 // ============================================================
 function isBlocked(row, col) {
     if (row < 0 || row >= TRAY_ROWS || col < 0 || col >= TRAY_COLS) return true;
-    return BLOCKED_CELLS.has(`${row},${col}`);
+    return _blockedCells.has(`${row},${col}`);
 }
 
 function canPlace(piece, row, col, ignorePieceId) {
@@ -408,18 +484,24 @@ function getTodayTarget(dateOrStr) {
 
 function checkWin() {
     const u = getUncoveredValidCells();
-    if (u.length !== 3) return false;
     if (!gameState.pieces.every(p => p.row >= 0)) return false;
     const t = getTodayTarget();
     const labels = u.map(c => ({label:c.meta.label, type:c.meta.type}));
-    return labels.some(l => l.type==='month' && l.label===t.targetMonth) &&
-           labels.some(l => l.type==='day' && l.label===t.targetDay) &&
-           labels.some(l => l.type==='weekday' && l.label===t.targetWeekday);
+    const config = TRAY_CONFIGS[getVariant().trayType];
+    if (!labels.some(l => l.type==='month' && l.label===t.targetMonth)) return false;
+    if (!labels.some(l => l.type==='day' && l.label===t.targetDay)) return false;
+    if (config.hasWeekdays && !labels.some(l => l.type==='weekday' && l.label===t.targetWeekday)) return false;
+    return true;
 }
 
 function handleWin() {
     const t = getTodayTarget();
-    document.getElementById('win-date').textContent = `${t.targetMonth} ${t.targetDay} ${t.targetWeekday}`;
+    const config = TRAY_CONFIGS[getVariant().trayType];
+    if (config.hasWeekdays) {
+        document.getElementById('win-date').textContent = `${t.targetMonth} ${t.targetDay} ${t.targetWeekday}`;
+    } else {
+        document.getElementById('win-date').textContent = `${t.targetMonth} ${t.targetDay}`;
+    }
     document.getElementById('win-overlay').classList.remove('hidden');
     if (!gameState.viewingDate) saveHistory(formatDateKey());
 }
@@ -437,10 +519,14 @@ function parseDateKey(ds) {
     return { year: parseInt(parts[0]), month: parseInt(parts[1]) - 1, day: parseInt(parts[2]) };
 }
 
-const SK = 'puzzle_a_day_v3', HK = 'puzzle_a_day_hist_v3', TK = 'puzzle_a_day_cfg_v3';
+const SK_OLD = 'puzzle_a_day_v3', HK_OLD = 'puzzle_a_day_hist_v3', TK_OLD = 'puzzle_a_day_cfg_v3';
+const TK = 'puzzle_a_day_cfg_v4';
+
+function storeKey() { return `puzzle_a_day_v4_${gameState.variant}`; }
+function historyKey() { return `puzzle_a_day_hist_v4_${gameState.variant}`; }
 
 function saveGame() {
-    try { localStorage.setItem(SK, JSON.stringify({
+    try { localStorage.setItem(storeKey(), JSON.stringify({
         pieces: gameState.pieces.map(p => ({id:p.id,rotation:p.rotation,reflected:p.reflected,row:p.row,col:p.col})),
         date: formatDateKey()
     })); } catch(e) {}
@@ -448,7 +534,9 @@ function saveGame() {
 
 function loadGame() {
     try {
-        const r = localStorage.getItem(SK);
+        let r = localStorage.getItem(storeKey());
+        // Fallback: try v3 key for first-time migration
+        if (!r && gameState.variant === 'dragonfjord') r = localStorage.getItem(SK_OLD);
         if (!r) return false;
         const d = JSON.parse(r);
         if (d.date !== formatDateKey()) return false;
@@ -462,18 +550,27 @@ function loadGame() {
 
 function saveHistory(ds) {
     try {
-        const r = localStorage.getItem(HK);
+        const r = localStorage.getItem(historyKey());
         const h = r ? JSON.parse(r) : {};
+        // Fallback: migrate old v3 history on first save
+        if (Object.keys(h).length === 0 && gameState.variant === 'dragonfjord') {
+            const old = localStorage.getItem(HK_OLD);
+            if (old) { try { Object.assign(h, JSON.parse(old)); } catch(e) {} }
+        }
         h[ds] = {
             pieces: gameState.pieces.map(p => ({id:p.id, rotation:p.rotation, reflected:p.reflected, row:p.row, col:p.col}))
         };
-        localStorage.setItem(HK, JSON.stringify(h));
+        localStorage.setItem(historyKey(), JSON.stringify(h));
     } catch(e) {}
 }
 
 function loadHistory() {
-    try { const r = localStorage.getItem(HK); return r ? JSON.parse(r) : {}; }
-    catch(e) { return {}; }
+    try {
+        let r = localStorage.getItem(historyKey());
+        // Fallback: try v3 history key for dragonfjord
+        if (!r && gameState.variant === 'dragonfjord') r = localStorage.getItem(HK_OLD);
+        return r ? JSON.parse(r) : {};
+    } catch(e) { return {}; }
 }
 
 function restoreHistoryState(dateKey) {
@@ -533,17 +630,23 @@ function returnToToday() {
 
 function loadSettings() {
     try {
-        const r = localStorage.getItem(TK);
+        let r = localStorage.getItem(TK);
+        // Fallback: try v3 settings
+        if (!r) r = localStorage.getItem(TK_OLD);
         if (!r) return;
         const s = JSON.parse(r);
         if (s.language) gameState.language = s.language;
         if (s.theme) gameState.theme = s.theme;
+        if (s.variant) gameState.variant = s.variant;
     } catch(e) {}
 }
 
 function saveSettings() {
-    try { localStorage.setItem(TK, JSON.stringify({language:gameState.language, theme:gameState.theme})); }
-    catch(e) {}
+    try { localStorage.setItem(TK, JSON.stringify({
+        language: gameState.language,
+        theme: gameState.theme,
+        variant: gameState.variant,
+    })); } catch(e) {}
 }
 
 // ============================================================
@@ -590,7 +693,7 @@ function calcCellSize() {
         // Height: bank doesn't sit below tray, so overhead is just fixed UI
         // App padding (~24) + header (~38) + date (~32) + controls (~40) + gaps (~30) ≈ 164
         const fixedOverhead = 180;
-        const csFromHeight = Math.floor((window.innerHeight - fixedOverhead - TRAY_PADDING * 2) / TRAY_ROWS);
+        const csFromHeight = Math.floor((window.innerHeight - fixedOverhead - TRAY_PADDING * 2) / effectiveRows());
         cs = Math.min(cs, csFromHeight);
 
         cs = Math.max(cs, 20);
@@ -602,7 +705,7 @@ function calcCellSize() {
 
         // Fixed overhead: app padding + header + date + tray pad + bank (~3 tray-cell units) + controls + gaps
         const fixedOverhead = 240;
-        const cellUsage = TRAY_ROWS + 3;
+        const cellUsage = effectiveRows() + 3;
         const csFromHeight = Math.floor((window.innerHeight - fixedOverhead - TRAY_PADDING * 2) / cellUsage);
         cs = Math.min(cs, csFromHeight);
 
@@ -627,7 +730,12 @@ function calcCellSize() {
 }
 
 function canvasW() { return TRAY_COLS * gameState.cellSize + TRAY_PADDING * 2; }
-function canvasH() { return TRAY_ROWS * gameState.cellSize + TRAY_PADDING * 2; }
+function canvasH() { return effectiveRows() * gameState.cellSize + TRAY_PADDING * 2; }
+
+function effectiveRows() {
+    const config = TRAY_CONFIGS[getVariant().trayType];
+    return config.hasWeekdays ? TRAY_ROWS : TRAY_ROWS - 1;
+}
 
 function setupCanvas() {
     const dpr = window.devicePixelRatio || 1;
@@ -930,12 +1038,17 @@ function updateTargetDisplay() {
     const target = getTodayTarget(isViewing ? gameState.viewingDate : undefined);
     const el = document.getElementById('target-date');
     const labelEl = document.querySelector('.date-label');
+    const config = TRAY_CONFIGS[getVariant().trayType];
 
     // Update label
     labelEl.textContent = isViewing ? t('viewing_past') : t('today');
 
-    // Date only
-    el.innerHTML = `<span style="font-weight:700;font-size:1.05rem;">${target.targetMonth} · ${target.targetDay} · ${target.targetWeekday}</span>`;
+    // Date string: include weekday only for full-tray variants
+    if (config.hasWeekdays) {
+        el.innerHTML = `<span style="font-weight:700;font-size:1.05rem;">${target.targetMonth} · ${target.targetDay} · ${target.targetWeekday}</span>`;
+    } else {
+        el.innerHTML = `<span style="font-weight:700;font-size:1.05rem;">${target.targetMonth} · ${target.targetDay}</span>`;
+    }
 
     // Show/hide return-to-today button
     const btn = document.getElementById('btn-return-today');
@@ -1357,6 +1470,15 @@ function setupUI() {
     document.getElementById('btn-close-lang').addEventListener('click', () => {
         document.getElementById('lang-overlay').classList.add('hidden');
     });
+    document.getElementById('btn-close-variant').addEventListener('click', () => {
+        document.getElementById('variant-overlay').classList.add('hidden');
+    });
+
+    // Title click → variant selector
+    document.querySelector('.title').addEventListener('click', () => {
+        document.getElementById('variant-overlay').classList.remove('hidden');
+        renderVariantList();
+    });
 
     // Calendar navigation
     document.getElementById('cal-prev-year').addEventListener('click', () => navigateCalendar(-1, 0));
@@ -1420,12 +1542,55 @@ function renderLangList() {
 
 function setLanguage(code) {
     gameState.language = code;
-    buildCellMeta(code);
+    buildCellMeta(code, getVariant().trayType);
     saveSettings();
     updateAllI18n();
     renderTray();
     renderPieceBank();
     document.getElementById('lang-overlay').classList.add('hidden');
+}
+
+// ============================================================
+// VARIANT SELECTOR
+// ============================================================
+function hasUnsavedProgress() {
+    return gameState.undoStack.length > 0 ||
+           gameState.pieces.some(p => p.row >= 0);
+}
+
+function renderVariantList() {
+    const list = document.getElementById('variant-list');
+    list.innerHTML = '';
+    VARIANTS.forEach(v => {
+        const btn = document.createElement('button');
+        btn.className = 'variant-btn';
+        if (v.id === gameState.variant) btn.classList.add('active');
+        btn.innerHTML = `<strong>${t(v.nameKey)}</strong>`;
+        btn.addEventListener('click', () => switchVariant(v.id));
+        list.appendChild(btn);
+    });
+}
+
+function switchVariant(variantId) {
+    if (variantId === gameState.variant) {
+        document.getElementById('variant-overlay').classList.add('hidden');
+        return;
+    }
+    if (hasUnsavedProgress()) {
+        if (!confirm(t('confirm_switch') || 'Switch variant? Current progress will be lost.')) return;
+    }
+    gameState.variant = variantId;
+    gameState.viewingDate = null;
+    buildCellMeta(gameState.language, getVariant().trayType);
+    initPieces();
+    const loaded = loadGame();
+    saveSettings();
+    renderTray();
+    renderPieceBank();
+    updateAllI18n();
+    updateTargetDisplay();
+    document.getElementById('variant-overlay').classList.add('hidden');
+    if (loaded && checkWin()) setTimeout(handleWin, 500);
 }
 
 function openHistoryDialog() {
@@ -1512,7 +1677,7 @@ function navigateCalendar(dy, dm) {
 // ============================================================
 function init() {
     loadSettings();
-    buildCellMeta(gameState.language);
+    buildCellMeta(gameState.language, getVariant().trayType);
     applyTheme();
     initPieces();
 
@@ -1526,8 +1691,8 @@ function init() {
 
     if (loaded && checkWin()) setTimeout(handleWin, 500);
 
-    console.log('🧩 A Puzzle A Day v3 ready!');
-    console.log(`   Today: ${getTodayTarget().targetMonth} ${getTodayTarget().targetDay} ${getTodayTarget().targetWeekday}`);
+    console.log('🧩 A Puzzle A Day v4 ready!');
+    console.log(`   Variant: ${getVariant().id} | Today: ${getTodayTarget().targetMonth} ${getTodayTarget().targetDay} ${getTodayTarget().targetWeekday}`);
     console.log('   Drag pieces into tray | Click = rotate | Double-click = flip');
 }
 

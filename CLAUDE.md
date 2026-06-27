@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-"A Puzzle A Day" is a single-page web puzzle game: fit 10 polyomino pieces into a 7×8 tray so that exactly 3 cells remain uncovered, showing today's month, day, and weekday. No build system — plain HTML/CSS/JS served directly from the filesystem. No external dependencies.
+"A Puzzle A Day" is a single-page web puzzle game with 14 polyomino pieces and 4 puzzle variants. Each variant uses a subset of pieces with a specific tray layout — fit pieces so that uncovered cells show today's month/day (and weekday, for applicable variants). No build system — plain HTML/CSS/JS served directly from the filesystem. No external dependencies.
 
 ## Commands
 
@@ -17,6 +17,24 @@ npx serve .
 ```
 
 ## Architecture
+
+### Puzzle variants (v4)
+
+4 puzzle variants defined in `VARIANTS[]` in `js/app.js`, each with a tray layout and piece subset. Switching is done by clicking the title — opens the variant selector overlay (`#variant-overlay`).
+
+| Variant | Tray Type | Pieces |
+|---------|-----------|--------|
+| DragonFjord's A-Puzzle-A-Day | `no-weekdays` | 2,3,4,5,6,7,12,14 |
+| JarringWords's Calendar Puzzle | `no-weekdays` | 2,3,4,5,6,7,12,13 |
+| TheRammer Puzzle Calendar | `no-weekdays-alt` | 1,5,6,7,8,9,10,11,12 |
+| WeekDay Calendar Puzzle | `full` | 1,2,4,6,7,8,10,12,13,14 |
+
+**Tray layouts** (defined in `TRAY_CONFIGS`):
+- `full`: Current layout — months + days 1-31 + 7 weekday cells. 6 blocked cells, 50 valid.
+- `no-weekdays`: Weekday cells become blocked (+7 blocked = 13 total). Months + days 1-31 only, 43 valid.
+- `no-weekdays-alt`: Like `no-weekdays` but days 29-31 at row 6 cols 4-6 (bottom-right) instead of bottom-left. Row 6 cols 0-3 blocked.
+
+`BLOCKED_CELLS` is now dynamic (`_blockedCells` rebuilt per variant in `buildCellMeta()`). `isBlocked()` reads from `_blockedCells`. The tray outer rectangle height shrinks by one row for `no-weekdays` variants via `effectiveRows()` (returns 7 instead of 8).
 
 ### Rendering: Dual approach
 
@@ -49,22 +67,25 @@ npx serve .
 
 ### Game state
 
-- `gameState` object in `js/app.js` holds `pieces[]`, `cellSize`, `language`, `theme`, `viewingDate`, `calendarYear`, `calendarMonth`, `undoStack[]`, and drag/click tracking fields.
+- `gameState` object in `js/app.js` holds `variant`, `pieces[]`, `cellSize`, `language`, `theme`, `viewingDate`, `calendarYear`, `calendarMonth`, `undoStack[]`, and drag/click tracking fields.
 - Key drag fields: `dragPieceId`, `dragFromTray`, `dragMoved`, `dragGrabOffsetX/Y` (precise grab point on the piece), `dragBankContainer` (DOM ref to hidden bank element), `dragClientX/Y` (current cursor position).
 - `viewingDate`: `null` = today's puzzle; `"YYYY-MM-DD"` string = viewing a past completed solution. When set, the date label shows "Viewing:" and a "Return to Today" button appears.
 - Each piece: `id`, `baseShape` (2D array), `rotation` (0-3), `reflected` (bool), `row`/`col` (-1 = in bank, ≥0 = placed on tray).
-- Piece cells total 47; tray valid cells = 50 (56 - 6 blocked); uncovered = 3 = today's date.
+- Piece count and tray valid cells vary by variant. `PIECE_DEFS` defines all 14 pieces; `initPieces()` filters by `getVariant().pieceIds`.
 - `bankCellSize()` computes proportional bank cell size: `max(13, min(24, round(cs * 0.45)))`.
+- `effectiveRows()` returns the visual tray height in rows (8 for `full` variant, 7 for no-weekday variants). Used in `canvasH()` and `calcCellSize()`.
 
-### localStorage keys
+### localStorage keys (v4)
+
+Game state and history are variant-scoped; settings are shared.
 
 | Key | Content |
 |-----|---------|
-| `puzzle_a_day_v3` | Current game state: `{ pieces: [{id,rotation,reflected,row,col}], date: "YYYY-MM-DD" }` |
-| `puzzle_a_day_hist_v3` | History object: `{ "YYYY-MM-DD": { pieces: [...] } }` — keyed by date, stores piece arrangement only |
-| `puzzle_a_day_cfg_v3` | Settings: `{ language, theme }` |
+| `puzzle_a_day_v4_{variantId}` | Current game state: `{ pieces: [{id,rotation,reflected,row,col}], date: "YYYY-MM-DD" }` |
+| `puzzle_a_day_hist_v4_{variantId}` | History object: `{ "YYYY-MM-DD": { pieces: [...] } }` — per-variant, keyed by date |
+| `puzzle_a_day_cfg_v4` | Settings: `{ language, theme, variant }` |
 
-Versioned keys prevent conflicts across iterations. History entries store only `pieces` — month/day/weekday are derived from the date key via `getTodayTarget()`.
+Variant-scoped keys (via `storeKey()`/`historyKey()`) isolate saves per puzzle variant. Old v3 keys (`puzzle_a_day_v3`, etc.) are read as fallback for DragonFjord variant migration. Settings key bumped to v4 to include `variant` field.
 
 ### Theming
 
@@ -76,7 +97,7 @@ CSS custom properties on `:root` define light theme; `@media (prefers-color-sche
 
 ### CSV data files
 
-- `方块设计.csv` (UTF-8): 10 piece shapes — `1` = filled cell, `0` = empty.
+- `方块设计.csv` (UTF-8): 14 piece shapes (方块一 to 方块十四) — `1` = filled cell, `0` = empty. The authoritative piece definitions are the JS `PIECE_DEFS` array; the CSV is the design source.
 - `托盘设计.csv`: Tray layout — months, days 1-31, and weekdays. **This file was GBK-encoded** and was converted to UTF-8 via `iconv -f GBK -t UTF-8`. If you need to re-read the original, convert first.
 
 ## Key rendering constraints
