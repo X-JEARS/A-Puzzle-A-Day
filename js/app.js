@@ -741,7 +741,9 @@ function removePieceFromBoard(pieceId) {
 function rotatePiece(pieceId) {
     const piece = gameState.pieces.find(p => p.id === pieceId);
     if (!piece) return;
-    piece.rotation = (piece.rotation + 1) % 4;
+    // CW rotation: when reflected, rotation direction is visually reversed,
+    // so we decrement rotation to keep visual CW rotation.
+    piece.rotation = piece.reflected ? (piece.rotation + 3) % 4 : (piece.rotation + 1) % 4;
     saveGame();
     renderTray();
     renderPieceBank();
@@ -775,7 +777,9 @@ function rotatePieceAt(pieceId, pivotRow, pivotCol) {
     if (localR < 0 || localR >= shape.length || localC < 0 || localC >= shape[0].length) return;
     if (shape[localR][localC] !== 1) return;
 
-    const newRotation = (piece.rotation + 1) % 4;
+    // CW rotation: when reflected, rotation direction is visually reversed,
+    // so we decrement rotation to keep visual CW rotation.
+    const newRotation = piece.reflected ? (piece.rotation + 3) % 4 : (piece.rotation + 1) % 4;
     // After 90° CW rotation, the cell at (localR, localC) in the old shape
     // moves to (localC, oldRows - 1 - localR) in the new shape.
     // Keep that cell at the same tray position (pivotRow, pivotCol):
